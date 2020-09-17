@@ -1,0 +1,186 @@
+package lovesyk.rippanda.service.archival;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import lovesyk.rippanda.exception.RipPandaException;
+import lovesyk.rippanda.model.Gallery;
+import lovesyk.rippanda.service.archival.api.IArchivalService;
+import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
+import lovesyk.rippanda.settings.OperationMode;
+import lovesyk.rippanda.settings.Settings;
+
+/**
+ * The service responsible for the updating of already archived galleries.
+ */
+public class UpdateModeArchivalService extends AbstractArchivalService implements IArchivalService {
+    private static final Logger LOGGER = LogManager.getLogger(UpdateModeArchivalService.class);
+    private static final String PAGE_FILENAME = "page.html";
+    private static final Pattern GALLERY_URL_PATTERN = Pattern.compile("<a href=\".*?/g/(\\d+)/([0-9a-f]{10})/\\?report=select\">Report Gallery</a>");
+
+    /**
+     * Constructs a new search result archival service instance.
+     * 
+     * @param settings                the application settings
+     * @param elementArchivalServices the archival services which should be invoked
+     *                                for archiving elements
+     */
+    @Inject
+    public UpdateModeArchivalService(Settings settings, Instance<IElementArchivalService> elementArchivalServices) {
+        super(settings, elementArchivalServices);
+    }
+
+    /**
+     * Initializes the instance.
+     */
+    @PostConstruct
+    public void init() {
+        super.init();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void process() throws RipPandaException, InterruptedException {
+        if (isRequired()) {
+            LOGGER.info("Activating update mode.");
+            run();
+        }
+    }
+
+    /**
+     * Checks if the update mode should be executed based in application settings.
+     * 
+     * @return <code>true</code> if update mode is enabled, <code>false</false>
+     *         otherwise.
+     */
+    private boolean isRequired() {
+        return getSettings().getOperationMode() == OperationMode.UPDATE;
+    }
+
+    /**
+     * Runs the update archival service.
+     * <p>
+     * Processing will be aborted on over 3 failures in a row.
+     * 
+     * @throws RipPandaException    on failure
+     * @throws InterruptedException on interruption
+     */
+    public void run() throws RipPandaException, InterruptedException {
+        initDirs();
+        initSuccessIds();
+
+        int failures = 0;
+        for (Gallery gallery : parseGalleries(getSettings().getArchiveDirectory())) {
+            if (failures > 3) {
+                throw new RipPandaException("Too many failures. Aborting...");
+            }
+            try {
+                process(gallery);
+                failures = 0;
+            } catch (RipPandaException e) {
+                LOGGER.warn("Failed processing gallery. Continuing...", e);
+                ++failures;
+            }
+        }
+
+        deleteSuccessTempFile();
+    }
+
+    /**
+     * Processes a single gallery of a search result.
+     * 
+     * @param gallery the gallery to process
+     * @throws RipPandaException    on failure
+     * @throws InterruptedException on interruption
+     */
+    private void process(Gallery gallery) throws RipPandaException, InterruptedException {
+        LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\"", gallery.getId(), gallery.getToken());
+
+        int id = gallery.getId();
+        addTempSuccessId(id);
+        for (IElementArchivalService archivingService : getArchivingServiceList()) {
+            archivingService.process(gallery);
+        }
+        if (!isInSuccessIds(id)) {
+            addSuccessId(id);
+        }
+
+        updateSuccessIds();
+    }
+
+    /**
+     * Parses all galleries in the given directory.
+     * 
+     * @param path the path to search for galleries in
+     * @return all galleries, never <code>null</code>
+     * @throws RipPandaException on failure
+     */
+    private List<Gallery> parseGalleries(Path path) throws RipPandaException {
+        List<Gallery> galleries = new ArrayList<>();
+        try (Stream<Path> stream = Files.walk(path).skip(1)) {
+            for (Path entry : (Iterable<Path>) stream::iterator) {
+                if (entry.getFileName().toString().equals(PAGE_FILENAME)) {
+                    Gallery gallery = parseGallery(entry);
+                    if (gallery != null) {
+                        LOGGER.debug("Found gallery with ID \"{}\" and token \"{}\".", gallery.getId(), gallery.getToken());
+                        galleries.add(gallery);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RipPandaException("Could not traverse the given archive directory.", e);
+        }
+
+        return galleries;
+    }
+
+    /**
+     * Parses a single gallery, assuming it resides in the same folder as the page
+     * file given.
+     * <p>
+     * To ensure quick parsing this is done purely by text regex without actually
+     * parsing the HTML.
+     * 
+     * @param pageFile the page file to use for base information
+     * @return the parsed gallery
+     * @throws RipPandaException on failure
+     */
+    private Gallery parseGallery(Path pageFile) throws RipPandaException {
+        Gallery gallery = null;
+
+        try (Stream<String> stream = Files.lines(pageFile)) {
+            for (String line : (Iterable<String>) stream::iterator) {
+                Matcher matcher = GALLERY_URL_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    int id;
+                    try {
+                        id = Integer.valueOf(matcher.group(1));
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Failed parsing gallery ID, this line will be skipped.", e);
+                        continue;
+                    }
+                    String token = matcher.group(2);
+                    gallery = new Gallery(id, token, pageFile.getParent());
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.warn("Failed reading file, it will be skipped.", e);
+        }
+
+        return gallery;
+    }
+}

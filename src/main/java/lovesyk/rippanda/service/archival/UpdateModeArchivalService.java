@@ -86,17 +86,20 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         initDirs();
         initSuccessIds();
 
-        int failures = 0;
+        int failureCount = 0;
+        int maxFailureCount = 3;
         for (Gallery gallery : parseGalleries(getSettings().getArchiveDirectory())) {
-            if (failures > 3) {
-                throw new RipPandaException("Too many failures. Aborting...");
+            if (failureCount > maxFailureCount) {
+                throw new RipPandaException("Encountered more than {} failures successively. Aborting...");
             }
+
             try {
                 process(gallery);
-                failures = 0;
+                failureCount = 0;
             } catch (RipPandaException e) {
-                LOGGER.warn("Failed processing gallery. Continuing...", e);
-                ++failures;
+                LOGGER.warn("Failed processing gallery. Waiting for 10 seconds before continuing...", e);
+                ++failureCount;
+                Thread.sleep(1000 * 10);
             }
         }
 
@@ -105,23 +108,43 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
 
     /**
      * Processes a single gallery of a search result.
+     * <p>
+     * Element archiving failures will be retried up to 3 times and gallery
+     * processing will be finished in any case.
      * 
      * @param gallery the gallery to process
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
     private void process(Gallery gallery) throws RipPandaException, InterruptedException {
+        int id = gallery.getId();
         LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\"", gallery.getId(), gallery.getToken());
 
-        int id = gallery.getId();
         addTempSuccessId(id);
+
+        RipPandaException lastException = null;
         for (IElementArchivalService archivingService : getArchivingServiceList()) {
-            archivingService.process(gallery);
+            for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+                try {
+                    archivingService.process(gallery);
+                    break;
+                } catch (RipPandaException e) {
+                    LOGGER.warn("Archiving element failed, {} tries remain.", remainingTries, e);
+                    lastException = e;
+                    if (remainingTries > 0) {
+                        LOGGER.warn("Waiting 10 seconds before retrying...");
+                        Thread.sleep(1000 * 10);
+                    }
+                }
+            }
         }
+        if (lastException != null) {
+            throw new RipPandaException("Gallery processing finished with at least one failure.", lastException);
+        }
+
         if (!isInSuccessIds(id)) {
             addSuccessId(id);
         }
-
         updateSuccessIds();
     }
 

@@ -53,42 +53,38 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
     public void process(Gallery gallery) throws RipPandaException, InterruptedException {
         getApiArchivingService().ensureLoaded(gallery);
 
-        boolean isRequired = parseTorrentCount(gallery) > 0;
+        List<Path> existingTorrentFiles = new ArrayList<>();
+        if (Files.isDirectory(gallery.getDir())) {
+            try {
+                Files.list(gallery.getDir()).filter(x -> x.toString().endsWith(".torrent")).forEach(existingTorrentFiles::add);
+            } catch (IOException e) {
+                throw new RipPandaException("Could not look up existing torrent files.", e);
+            }
+        }
+
+        boolean isRequired = parseTorrentCount(gallery) != existingTorrentFiles.size();
+
         if (isRequired) {
+            LOGGER.info("Torrents need to be archived.");
             Document document = getWebClient().loadTorrentPage(gallery.getId(), gallery.getToken());
 
             Elements torrentUrlElements = document.select("#torrentinfo form a[href*=.torrent]");
             List<String> torrentUrlList = torrentUrlElements.stream().map(x -> x.attr("href")).collect(Collectors.toList());
 
-            List<Path> existingTorrentFiles = new ArrayList<>();
-            if (Files.isDirectory(gallery.getDir())) {
+            for (Path existingTorrentFile : existingTorrentFiles) {
                 try {
-                    Files.list(gallery.getDir()).filter(x -> x.toString().endsWith(".torrent")).forEach(existingTorrentFiles::add);
+                    Files.deleteIfExists(existingTorrentFile);
                 } catch (IOException e) {
-                    throw new RipPandaException("Could not look up existing torrent files.", e);
+                    throw new RipPandaException("Failed deleting old torrent files.");
                 }
             }
-            isRequired = torrentUrlList.size() != existingTorrentFiles.size();
 
-            if (isRequired) {
-                LOGGER.info("Torrents need to be archived.");
-
+            for (String torrentUrl : torrentUrlList) {
                 initDir(gallery.getDir());
-
-                for (Path existingTorrentFile : existingTorrentFiles) {
-                    try {
-                        Files.deleteIfExists(existingTorrentFile);
-                    } catch (IOException e) {
-                        throw new RipPandaException("Failed deleting old torrent files.");
-                    }
-                }
-
-                for (String torrentUrl : torrentUrlList) {
-                    tryDownloadTorrentFile(torrentUrl, torrentUrlElements, gallery);
-                }
-            } else {
-                LOGGER.info("Torrents do not need to be archived.");
+                tryDownloadTorrentFile(torrentUrl, torrentUrlElements, gallery);
             }
+        } else {
+            LOGGER.info("Torrents do not need to be archived.");
         }
     }
 

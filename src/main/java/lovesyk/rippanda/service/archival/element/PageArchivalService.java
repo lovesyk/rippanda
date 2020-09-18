@@ -1,11 +1,7 @@
 package lovesyk.rippanda.service.archival.element;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import javax.inject.Inject;
 
@@ -55,23 +51,13 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
     /**
      * Checks if the page should be saved or not.
      * 
-     * @return <code>true</code> if no recent page has been found on disk,
+     * @return <code>true</code> if no page has been found on disk,
      *         <code>false</false> otherwise.
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException {
         Path pageFile = gallery.getDir().resolve(FILENAME);
         boolean result = getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(pageFile);
-        if (result) {
-            Instant threshold = Instant.now().minus(5, ChronoUnit.DAYS);
-            FileTime lastModifiedTime;
-            try {
-                lastModifiedTime = Files.getLastModifiedTime(pageFile);
-            } catch (IOException e) {
-                throw new RipPandaException("Could not read last modified time.", e);
-            }
-            result = lastModifiedTime.toInstant().isBefore(threshold);
-        }
 
         return result;
     }

@@ -3,6 +3,9 @@ package lovesyk.rippanda.service.archival;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -123,6 +126,25 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
     }
 
     /**
+     * Checks if the gallery should be processed or not.
+     * 
+     * @param dir the directory of the gallery
+     * @return <code>true</code> if the gallery hasn't been modified for a specific
+     *         time, <code>false</false> otherwise.
+     * @throws RipPandaException on failure
+     */
+    private boolean isRequired(Path dir) throws RipPandaException {
+        Instant threshold = Instant.now().minus(30, ChronoUnit.DAYS);
+        FileTime lastModifiedTime;
+        try {
+            lastModifiedTime = Files.getLastModifiedTime(dir);
+        } catch (IOException e) {
+            throw new RipPandaException("Could not read last modified time.", e);
+        }
+        return lastModifiedTime.toInstant().isBefore(threshold);
+    }
+
+    /**
      * Parses all galleries in the given directory.
      * 
      * @param path the path to search for galleries in
@@ -162,23 +184,28 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
     private Gallery parseGallery(Path pageFile) throws RipPandaException {
         Gallery gallery = null;
 
-        try (Stream<String> stream = Files.lines(pageFile)) {
-            for (String line : (Iterable<String>) stream::iterator) {
-                Matcher matcher = GALLERY_URL_PATTERN.matcher(line);
-                if (matcher.find()) {
-                    int id;
-                    try {
-                        id = Integer.valueOf(matcher.group(1));
-                    } catch (NumberFormatException e) {
-                        LOGGER.warn("Failed parsing gallery ID, this line will be skipped.", e);
-                        continue;
+        Path parent = pageFile.getParent();
+        if (isRequired(parent)) {
+            try (Stream<String> stream = Files.lines(pageFile)) {
+                for (String line : (Iterable<String>) stream::iterator) {
+                    Matcher matcher = GALLERY_URL_PATTERN.matcher(line);
+                    if (matcher.find()) {
+                        int id;
+                        try {
+                            id = Integer.valueOf(matcher.group(1));
+                        } catch (NumberFormatException e) {
+                            LOGGER.warn("Failed parsing gallery ID, this line will be skipped.", e);
+                            continue;
+                        }
+                        String token = matcher.group(2);
+                        gallery = new Gallery(id, token, pageFile.getParent());
                     }
-                    String token = matcher.group(2);
-                    gallery = new Gallery(id, token, pageFile.getParent());
                 }
+            } catch (IOException e) {
+                LOGGER.warn("Failed reading file, it will be skipped.", e);
             }
-        } catch (IOException e) {
-            LOGGER.warn("Failed reading file, it will be skipped.", e);
+        } else {
+            LOGGER.debug("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", parent);
         }
 
         return gallery;

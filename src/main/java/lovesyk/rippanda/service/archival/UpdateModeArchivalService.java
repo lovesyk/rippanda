@@ -90,7 +90,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         int maxFailureCount = 3;
         for (Gallery gallery : parseGalleries(getSettings().getArchiveDirectory())) {
             if (failureCount > maxFailureCount) {
-                throw new RipPandaException("Encountered more than {} failures successively. Aborting...");
+                throw new RipPandaException(String.format("Encountered more than %s failures successively. Aborting...", maxFailureCount));
             }
 
             try {

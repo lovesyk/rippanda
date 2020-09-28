@@ -74,7 +74,7 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
     }
 
     /**
-     * Runs the download archival service.
+     * Runs the download archival service, retrying if necessary.
      * 
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
@@ -85,7 +85,21 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
 
         String pageUrl = getSettings().getUri().toString();
         while (pageUrl != null) {
-            Document searchResultPage = getWebClient().loadDocument(pageUrl);
+            Document searchResultPage = null;
+            for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+                try {
+                    searchResultPage = getWebClient().loadDocument(pageUrl);
+                    break;
+                } catch (RipPandaException e) {
+                    LOGGER.warn("Loading search result page failed, {} tries remain.", remainingTries, e);
+                    if (remainingTries > 0) {
+                        LOGGER.warn("Waiting 10 seconds before retrying...");
+                        Thread.sleep(1000 * 10);
+                    } else {
+                        throw e;
+                    }
+                }
+            }
 
             List<Gallery> galleries = parseGalleries(searchResultPage);
             if (galleries.isEmpty()) {
@@ -94,10 +108,19 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
             }
 
             for (Gallery gallery : galleries) {
-                try {
-                    process(gallery);
-                } catch (RipPandaException e) {
-                    LOGGER.warn("Failed processing gallery. Continuing...", e);
+                for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+                    try {
+                        process(gallery);
+                        break;
+                    } catch (RipPandaException e) {
+                        LOGGER.warn("Archiving gallery failed, {} tries remain.", remainingTries, e);
+                        if (remainingTries > 0) {
+                            LOGGER.warn("Waiting 10 seconds before retrying...");
+                            Thread.sleep(1000 * 10);
+                        } else {
+                            throw e;
+                        }
+                    }
                 }
             }
 

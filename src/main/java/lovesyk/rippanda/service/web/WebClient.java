@@ -105,13 +105,15 @@ public class WebClient implements IWebClient {
                 .build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
-        // https://stackoverflow.com/a/25203021
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", new ProxiedPlainConnectionSocketFactory())
-                .register("https", new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
-        DnsResolver dnsResolver = new FakeDnsResolver();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
-        httpClientBuilder.setConnectionManager(connectionManager);
+        if (getSettings().getProxy() != null) {
+            // https://stackoverflow.com/a/25203021
+            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", new ProxiedPlainConnectionSocketFactory())
+                    .register("https", new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
+            DnsResolver dnsResolver = new FakeDnsResolver();
+            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
+            httpClientBuilder.setConnectionManager(connectionManager);
+        }
 
         this.httpClientBuilder = httpClientBuilder;
     }

@@ -42,15 +42,15 @@ abstract class AbstractElementArchivalService {
 
     static {
         illegalCharMapping = new HashMap<>();
-        illegalCharMapping.put('\\', 'Å_');
-        illegalCharMapping.put('/', 'Å^');
-        illegalCharMapping.put('|', 'Åb');
-        illegalCharMapping.put(':', 'ÅF');
-        illegalCharMapping.put('?', 'ÅH');
-        illegalCharMapping.put('*', 'Åñ');
-        illegalCharMapping.put('\"', '˙W');
-        illegalCharMapping.put('<', 'ÅÉ');
-        illegalCharMapping.put('>', 'ÅÑ');
+        illegalCharMapping.put('\\', 'Ôºº');
+        illegalCharMapping.put('/', 'Ôºè');
+        illegalCharMapping.put('|', 'ÔΩú');
+        illegalCharMapping.put(':', 'Ôºö');
+        illegalCharMapping.put('?', 'Ôºü');
+        illegalCharMapping.put('*', 'Ôºä');
+        illegalCharMapping.put('\"', 'ÔºÇ');
+        illegalCharMapping.put('<', 'Ôºú');
+        illegalCharMapping.put('>', 'Ôºû');
     }
 
     /**

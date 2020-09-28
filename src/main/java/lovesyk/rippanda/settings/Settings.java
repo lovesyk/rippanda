@@ -1,5 +1,6 @@
 package lovesyk.rippanda.settings;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -31,6 +32,9 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-c",
             "--cookies" }, description = "Log-in / perk cookies in key=value pairs separated by ;", required = true, parameterConsumer = CookiesConsumer.class)
     private Map<String, String> cookies;
+    @Option(names = { "-p",
+            "--proxy" }, description = "SOCKS5 proxy to use for network requests and DNS resolution.", converter = InetSocketAddressConverter.class)
+    private InetSocketAddress proxy;
     @Option(names = { "-u", "--url" }, description = "Base URL to use for web requests or a more specific search URL if in download mode", required = true)
     private URI uri;
     @Option(names = { "-d", "--delay" }, description = "Minimum delay between web request in ISO-8601 time format"
@@ -104,6 +108,7 @@ public class Settings implements Callable<Integer> {
     private void print() {
         LOGGER.info("Using the following configuration:");
         LOGGER.info("Operation mode: {}", getOperationMode());
+        LOGGER.info("Proxy: {}", getProxy());
         LOGGER.info("URL: {}", getUri());
         LOGGER.info("Request delay: {}", getRequestDelay());
         LOGGER.info("Archive directory: {}", getArchiveDirectory());
@@ -126,6 +131,15 @@ public class Settings implements Callable<Integer> {
      */
     public Map<String, String> getCookies() {
         return cookies;
+    }
+
+    /**
+     * Gets the SOCKS5 proxy to use for network requests.
+     * 
+     * @return the proxy
+     */
+    public InetSocketAddress getProxy() {
+        return proxy;
     }
 
     /**

@@ -114,7 +114,7 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
      * @return the URL of the next search result page.
      */
     private String parseNextPageUrl(Document document) {
-        Element nextPageElement = document.selectFirst(".ptds + td:not(.ptdd)");
+        Element nextPageElement = document.selectFirst(".ptds + td:not(.ptdd) > a");
         if (nextPageElement != null) {
             return nextPageElement.attr("href");
         }

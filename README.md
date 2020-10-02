@@ -1,4 +1,4 @@
-# rippanda
+# rippanda : An amazing project
 ## Description
 rippanda is an archiver tool for certain gallery websites using the panda-focused content system.
 

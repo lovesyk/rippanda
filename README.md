@@ -7,12 +7,12 @@ Usage: [-a=path] [-d=time] [-p=address] [-s=path] -u=url -c=cookies... <operatio
   <operationMode>        Operation mode: DOWNLOAD, UPDATE (default: DOWNLOAD)
   -a, --archive-dir=path Directory containing archived galleries (default: .)
   -c, --cookies=cookies  Log-in / perk cookies in key=value pairs separated by ;
-  -d, --delay=time       Minimum delay between web request in ISO-8601 time format (default: 1S)
+  -d, --delay=time       Minimum delay between web request in ISO-8601 time format (default: 5S)
   -p, --proxy=address    SOCKS5 proxy to use for network requests and DNS resolution.
   -s, --success-dir=path Directory containing success files (default: .)
   -u, --url=url          Base URL to use for web requests or a more specific search URL if in download mode
 
-Example: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 5S download
+Example: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 4S download
 ```
 
 ![Example Download](/screenshot.png?raw=true "Example Download")
@@ -46,7 +46,7 @@ There are two purposes to those files:
 - This tremendously increases the startup speed of the tool since there is no need to read a possibly huge directory of galleries to find out which can safely be skipped.
 
 ## Delay
-Make sure to set the delay accordingly to your needs. The default delay of 5 second should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
+Make sure to set the delay accordingly to your needs. The default delay of 5 seconds should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
 
 ## Building with Maven
 ```

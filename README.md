@@ -46,7 +46,7 @@ There are two purposes to those files:
 - This tremendously increases the startup speed of the tool since there is no need to read a possibly huge directory of galleries to find out which can safely be skipped.
 
 ## Delay
-Make sure to set the delay accordingly to your needs. The default delay of 1 second is fine to download a few galleries but if you start archiving or even worse updating hundreds of them, make sure to increase the delay to not get banned by the web servers.
+Make sure to set the delay accordingly to your needs. The default delay of 5 second should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
 
 ## Building with Maven
 ```

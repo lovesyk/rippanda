@@ -38,7 +38,7 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-u", "--url" }, description = "Base URL to use for web requests or a more specific search URL if in download mode", required = true)
     private URI uri;
     @Option(names = { "-d", "--delay" }, description = "Minimum delay between web request in ISO-8601 time format"
-            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "1S", converter = DelayConverter.class)
+            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "5S", converter = DelayConverter.class)
     private Duration requestDelay;
     @Option(names = { "-a", "--archive-dir" }, description = "Directory containing archived galleries" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
     private Path archiveDirectory;

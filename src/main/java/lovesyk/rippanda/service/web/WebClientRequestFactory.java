@@ -179,7 +179,8 @@ public class WebClientRequestFactory {
      * @throws RipPandaException on failure
      */
     public HttpPost createLoadArchivePreparationPageRequest(int id, String token, String archiverKey) throws RipPandaException {
-        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("archiver.php").setParameter("gid", String.valueOf(id)).setParameter("token", token).setParameter("or", archiverKey);
+        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("archiver.php").setParameter("gid", String.valueOf(id)).setParameter("token", token)
+                .setParameter("or", archiverKey);
         URI uri;
         try {
             uri = builder.build();

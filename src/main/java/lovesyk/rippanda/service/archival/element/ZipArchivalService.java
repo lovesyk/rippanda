@@ -92,7 +92,7 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
             initDir(gallery.getDir());
             String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableArchive.getName());
             save(downloadableArchive.getStream(), gallery.getDir(), sanitizedFileName);
-            
+
             return true;
         });
     }

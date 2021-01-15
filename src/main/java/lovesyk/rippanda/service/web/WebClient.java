@@ -112,7 +112,7 @@ public class WebClient implements IWebClient {
                     .register("https", new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
             DnsResolver dnsResolver = new FakeDnsResolver();
             PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
-            httpClientBuilder.setConnectionManager(connectionManager);
+            httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
         }
 
         this.httpClientBuilder = httpClientBuilder;

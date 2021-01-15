@@ -9,8 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -19,6 +17,7 @@ import org.jsoup.select.Elements;
 
 import com.google.gson.JsonElement;
 
+import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;

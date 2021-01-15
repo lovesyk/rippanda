@@ -7,11 +7,10 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import javax.inject.Singleton;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import jakarta.inject.Singleton;
 import lovesyk.rippanda.exception.RipPandaException;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;

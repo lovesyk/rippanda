@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Duration;
 
-import javax.inject.Inject;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -14,6 +12,7 @@ import org.jsoup.nodes.Element;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;

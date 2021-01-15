@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,6 +16,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;

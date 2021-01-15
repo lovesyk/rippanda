@@ -10,12 +10,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
 import lovesyk.rippanda.settings.Settings;

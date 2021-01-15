@@ -1,12 +1,11 @@
 package lovesyk.rippanda;
 
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.service.archival.api.IArchivalService;
 import lovesyk.rippanda.settings.Settings;

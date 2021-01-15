@@ -3,13 +3,12 @@ package lovesyk.rippanda.service.archival.element;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.inject.Inject;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;

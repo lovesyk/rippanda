@@ -7,10 +7,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
@@ -34,6 +30,9 @@ import org.jsoup.nodes.Document;
 
 import com.google.gson.JsonObject;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.service.web.api.ArchivableElementWriter;
 import lovesyk.rippanda.service.web.api.IWebClient;

@@ -52,11 +52,11 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
     /**
      * Checks if the thumbnail should be saved or not.
      * 
-     * @return <code>true</code> if no thumbnail was found on disk,
-     *         <code>false</false> otherwise.
+     * @return <code>true</code> if thumbnail archival is active but no thumbnail
+     *         was found on disk, <code>false</false> otherwise.
      */
     private boolean isRequired(Gallery gallery) {
-        return !Files.isRegularFile(gallery.getDir().resolve(FILENAME));
+        return getSettings().isThumbnailActive() && (!Files.isRegularFile(gallery.getDir().resolve(FILENAME)));
     }
 
     /**

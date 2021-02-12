@@ -101,12 +101,18 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     /**
      * Checks if metadata should be saved or not.
      * 
-     * @return <code>true</code> if no recent metadata has been found on disk,
-     *         <code>false</false> otherwise.
+     * @return <code>true</code> if metadata archival is active but no recent
+     *         metadata has been found on disk, <code>false</false> otherwise.
      */
     private boolean isRequired(Gallery gallery) {
-        Path metadataFile = gallery.getDir().resolve(FILENAME);
-        return getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(metadataFile);
+        boolean isRequired = getSettings().isMetadataActive();
+
+        if (isRequired) {
+            Path metadataFile = gallery.getDir().resolve(FILENAME);
+            isRequired = getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(metadataFile);
+        }
+
+        return isRequired;
     }
 
     /**

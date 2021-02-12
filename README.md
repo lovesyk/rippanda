@@ -3,11 +3,12 @@
 rippanda is an archiver tool for certain gallery websites using the panda-focused content system.
 
 ```
-Usage: [-a=path] [-d=time] [-p=address] [-s=path] -u=url -c=cookies... <operationMode>
+Usage: [-a=path] [-d=time] [-p=address] [-s=path] [-e=element] -u=url -c=cookies... <operationMode>
   <operationMode>        Operation mode: DOWNLOAD, UPDATE (default: DOWNLOAD)
   -a, --archive-dir=path Directory containing archived galleries (default: .)
   -c, --cookies=cookies  Log-in / perk cookies in key=value pairs separated by ;
   -d, --delay=time       Minimum delay between web request in ISO-8601 time format (default: 5S)
+  -e, --skip=element     Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)
   -p, --proxy=address    SOCKS5 proxy to use for network requests and DNS resolution.
   -s, --success-dir=path Directory containing success files (default: .)
   -u, --url=url          Base URL to use for web requests or a more specific search URL if in download mode

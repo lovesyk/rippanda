@@ -58,20 +58,25 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
     /**
      * Checks if the ZIP should be saved or not.
      * 
-     * @return <code>true</code> if the ZIP should be saved, <code>false</false>
-     *         otherwise.
+     * @return <code>true</code> if ZIP archival is active but not ZIP could be
+     *         found, <code>false</false> otherwise.
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException {
-        if (Files.isDirectory(gallery.getDir())) {
-            try {
-                return Files.list(gallery.getDir()).noneMatch(x -> x.toString().endsWith(".zip"));
-            } catch (IOException e) {
-                throw new RipPandaException("Could not check if ZIP file already exists.", e);
+        boolean isRequired = getSettings().isZipActive();
+        if (isRequired) {
+            isRequired = true;
+
+            if (Files.isDirectory(gallery.getDir())) {
+                try {
+                    isRequired = Files.list(gallery.getDir()).noneMatch(x -> x.toString().endsWith(".zip"));
+                } catch (IOException e) {
+                    throw new RipPandaException("Could not check if ZIP file already exists.", e);
+                }
             }
         }
 
-        return true;
+        return isRequired;
     }
 
     /**

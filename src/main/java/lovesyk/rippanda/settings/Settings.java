@@ -4,6 +4,9 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -22,6 +25,11 @@ import picocli.CommandLine.Parameters;
 @Singleton
 public class Settings implements Callable<Integer> {
     private static final String DESCRIPTION_DEFAULT_FRAGMENT = " (default: ${DEFAULT-VALUE})";
+    private static final String SKIP_ELEMENTS_METADATA = "metadata";
+    private static final String SKIP_ELEMENTS_PAGE = "page";
+    private static final String SKIP_ELEMENTS_THUMBNAIL = "thumbnail";
+    private static final String SKIP_ELEMENTS_TORRENT = "torrent";
+    private static final String SKIP_ELEMENTS_ZIP = "zip";
 
     private static final Logger LOGGER = LogManager.getLogger(Settings.class);
 
@@ -43,6 +51,9 @@ public class Settings implements Callable<Integer> {
     private Path archiveDirectory;
     @Option(names = { "-s", "--success-dir" }, description = "Directory containing success files" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
     private Path successDirectory;
+    @Option(names = { "-e", "--skip" }, description = "Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)"
+            + DESCRIPTION_DEFAULT_FRAGMENT)
+    private HashSet<String> elementsToSkip = new HashSet<String>();
 
     // not configurable for now
     private String userAgent = null;
@@ -65,6 +76,7 @@ public class Settings implements Callable<Integer> {
         }
 
         initCookies();
+        validateElementsToSkip();
         print();
     }
 
@@ -102,6 +114,21 @@ public class Settings implements Callable<Integer> {
     }
 
     /**
+     * Validates the entered elements to be skipped.
+     * 
+     * @throws RipPandaException if any invalid element is encountered
+     */
+    private void validateElementsToSkip() throws RipPandaException {
+        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_THUMBNAIL, SKIP_ELEMENTS_TORRENT,
+                SKIP_ELEMENTS_ZIP);
+        for (String element : elementsToSkip) {
+            if (!validElements.contains(element)) {
+                throw new RipPandaException("Invalid elements to be skipped.");
+            }
+        }
+    }
+
+    /**
      * Prints the settings the application will be run with.
      */
     private void print() {
@@ -112,6 +139,11 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Request delay: {}", getRequestDelay());
         LOGGER.info("Archive directory: {}", getArchiveDirectory());
         LOGGER.info("Success directory: {}", getSuccessDirectory());
+        LOGGER.info("Metadata active: {}", isMetadataActive());
+        LOGGER.info("Page active: {}", isPageActive());
+        LOGGER.info("Thumbnail active: {}", isThumbnailActive());
+        LOGGER.info("Torrent active: {}", isTorrentActive());
+        LOGGER.info("ZIP active: {}", isZipActive());
     }
 
     /**
@@ -193,5 +225,50 @@ public class Settings implements Callable<Integer> {
      */
     public String getSuccessFileId() {
         return successFileId;
+    }
+
+    /**
+     * Whether metadata archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isMetadataActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_METADATA);
+    }
+
+    /**
+     * Whether page archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isPageActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_PAGE);
+    }
+
+    /**
+     * Whether thumbnail archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isThumbnailActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_THUMBNAIL);
+    }
+
+    /**
+     * Whether torrent archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isTorrentActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_TORRENT);
+    }
+
+    /**
+     * Whether ZIP archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isZipActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_ZIP);
     }
 }

@@ -50,18 +50,23 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
      */
     @Override
     public void process(Gallery gallery) throws RipPandaException, InterruptedException {
-        getApiArchivingService().ensureLoaded(gallery);
+        boolean isRequired = getSettings().isTorrentActive();
 
-        List<Path> existingTorrentFiles = new ArrayList<>();
-        if (Files.isDirectory(gallery.getDir())) {
-            try {
-                Files.list(gallery.getDir()).filter(x -> x.toString().endsWith(".torrent")).forEach(existingTorrentFiles::add);
-            } catch (IOException e) {
-                throw new RipPandaException("Could not look up existing torrent files.", e);
+        List<Path> existingTorrentFiles = null;
+        if (isRequired) {
+            getApiArchivingService().ensureLoaded(gallery);
+
+            existingTorrentFiles = new ArrayList<>();
+            if (Files.isDirectory(gallery.getDir())) {
+                try {
+                    Files.list(gallery.getDir()).filter(x -> x.toString().endsWith(".torrent")).forEach(existingTorrentFiles::add);
+                } catch (IOException e) {
+                    throw new RipPandaException("Could not look up existing torrent files.", e);
+                }
             }
-        }
 
-        boolean isRequired = parseTorrentCount(gallery) != existingTorrentFiles.size();
+            isRequired = parseTorrentCount(gallery) != existingTorrentFiles.size();
+        }
 
         if (isRequired) {
             LOGGER.info("Torrents need to be archived.");

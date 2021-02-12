@@ -50,15 +50,19 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
     /**
      * Checks if the page should be saved or not.
      * 
-     * @return <code>true</code> if no page has been found on disk,
-     *         <code>false</false> otherwise.
+     * @return <code>true</code> if page archival is active but no page has been
+     *         found on disk, <code>false</false> otherwise.
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException {
-        Path pageFile = gallery.getDir().resolve(FILENAME);
-        boolean result = getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(pageFile);
+        boolean isRequired = getSettings().isPageActive();
 
-        return result;
+        if (isRequired) {
+            Path pageFile = gallery.getDir().resolve(FILENAME);
+            isRequired = getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(pageFile);
+        }
+
+        return isRequired;
     }
 
     /**

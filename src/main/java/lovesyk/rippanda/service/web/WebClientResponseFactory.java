@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.parser.Parser;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -141,6 +142,7 @@ public class WebClientResponseFactory {
                     .filter(Objects::nonNull).map(NameValuePair::getValue).findFirst();
             if (filenameIso.isPresent()) {
                 filename = new String(filenameIso.get().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                filename = Parser.unescapeEntities(filename, false);
             }
         }
 

@@ -90,8 +90,6 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
             for (Path directory : (Iterable<Path>) stream::iterator) {
                 Gallery gallery = parseGallery(directory);
                 if (gallery != null) {
-                    LOGGER.debug("Found gallery with ID \"{}\" and token \"{}\".", gallery.getId(), gallery.getToken());
-
                     try {
                         process(gallery);
                         failureCount = 0;

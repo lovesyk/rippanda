@@ -230,7 +230,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
     private boolean downloadTorrentFile(String torrentUrl, Gallery gallery, boolean failAcceptable) throws RipPandaException, InterruptedException {
         return getWebClient().downloadFile(torrentUrl, (downloadableTorrent) -> {
             if ("application/x-bittorrent".equals(downloadableTorrent.getMimeType())) {
-                String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableTorrent.getName());
+                String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableTorrent.getName(), false);
                 save(downloadableTorrent.getStream(), gallery.getDir(), sanitizedFileName);
 
                 return true;

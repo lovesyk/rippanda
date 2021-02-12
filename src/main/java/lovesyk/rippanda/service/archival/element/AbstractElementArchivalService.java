@@ -8,6 +8,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +36,12 @@ abstract class AbstractElementArchivalService {
      * 255 UTF-16 bytes. Subtracting 4 characters to accommodate 3-letter temporary
      * filename extensions.
      */
-    private static final int MAX_FILENAME_LENGTH = 123;
+    private static final int MAX_FILENAME_LENGTH_UNIQUE = 123;
+    /**
+     * Non-unique filenames need an additional 4 characters to accommodate for
+     * suffixes of (2) up to (99).
+     */
+    private static final int MAX_FILENAME_LENGTH = MAX_FILENAME_LENGTH_UNIQUE - 5;
 
     private Settings settings;
     private IWebClient webClient;
@@ -186,10 +194,12 @@ abstract class AbstractElementArchivalService {
      * 
      * @param dir      the directory the file be later saved to
      * @param filename the filename to sanitize
+     * @param unique   whether the filename is unique or a (1), (2) etc. should be
+     *                 appended
      * @return the sanitized filename
      * @throws RipPandaException on failure
      */
-    protected String sanitizeFileName(Path dir, String filename) throws RipPandaException {
+    protected String sanitizeFileName(Path dir, String filename, boolean unique) throws RipPandaException {
         LOGGER.debug("Sanitizing the filename \"{}\"...", filename);
 
         String sanitizedFilename = filename;
@@ -207,14 +217,15 @@ abstract class AbstractElementArchivalService {
 
         Path file = dir.resolve(sanitizedFilename).toAbsolutePath();
         int maxPathLengthDiff = file.toString().length() - MAX_PATH_LENGTH;
-        int maxFilenameLengthDiff = sanitizedFilename.length() - MAX_FILENAME_LENGTH;
+        int maxFilenameLength = unique ? MAX_FILENAME_LENGTH_UNIQUE : MAX_FILENAME_LENGTH;
+        int maxFilenameLengthDiff = sanitizedFilename.length() - maxFilenameLength;
         int excessiveLength = Math.max(maxPathLengthDiff, maxFilenameLengthDiff);
+
+        String baseName = FilenameUtils.getBaseName(sanitizedFilename);
+        String dottedExtension = sanitizedFilename.substring(baseName.length());
 
         if (excessiveLength > 0) {
             LOGGER.debug("Filename needs to be shortened by {} characters.", excessiveLength);
-
-            String baseName = FilenameUtils.getBaseName(sanitizedFilename);
-            String dottedExtension = sanitizedFilename.substring(baseName.length());
 
             if (excessiveLength > baseName.length()) {
                 throw new RipPandaException("Cannot shorten file name enough to fulfil limits.");
@@ -224,6 +235,44 @@ abstract class AbstractElementArchivalService {
             sanitizedFilename = baseNameCut + dottedExtension;
 
             LOGGER.debug("Filename was shortened to \"{}\".", sanitizedFilename);
+        }
+
+        String nonCollidingFilename = sanitizedFilename;
+        int maxSuffix = unique ? 1 : 99;
+        for (int i = 1; i <= maxSuffix; ++i) {
+            if (i > 1) {
+                nonCollidingFilename = String.format("%s (%s)%s", baseName, i, dottedExtension);
+            }
+
+            Map<String, Path> existingFilenames;
+            try {
+                existingFilenames = Files.list(dir).collect(Collectors.toMap(x -> x.getFileName().toString().toLowerCase(), x -> x));
+            } catch (IOException e) {
+                throw new RipPandaException("Could not list directory files.", e);
+            }
+            
+            Path existingFilename = existingFilenames.get(nonCollidingFilename.toLowerCase());
+            if (existingFilename != null) {
+                if (unique) {
+                    try {
+                        Files.delete(existingFilename);
+                    } catch (IOException e) {
+                        throw new RipPandaException("Could not delete file colliding by filename.", e);
+                    }
+                } else {
+                    if (i == maxSuffix) {
+                        throw new RipPandaException("Non-colliding filenames exhausted.");
+                    } else {
+                        continue;
+                    }
+                }
+            }
+
+            if (!nonCollidingFilename.equals(sanitizedFilename)) {
+                sanitizedFilename = nonCollidingFilename;
+                LOGGER.debug("Non-colliding filename was adjusted to \"{}\".", sanitizedFilename);
+            }
+            break;
         }
 
         return sanitizedFilename;

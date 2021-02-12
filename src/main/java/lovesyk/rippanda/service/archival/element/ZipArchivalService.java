@@ -95,7 +95,7 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
         LOGGER.info("Saving archive...");
         getWebClient().downloadFile(archiveUrl, (downloadableArchive) -> {
             initDir(gallery.getDir());
-            String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableArchive.getName());
+            String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableArchive.getName(), true);
             save(downloadableArchive.getStream(), gallery.getDir(), sanitizedFileName);
 
             return true;

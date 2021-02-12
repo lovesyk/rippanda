@@ -60,27 +60,29 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
         List<ApiTorrent> apiTorrents = new ArrayList<>();
         if (isRequired) {
             apiTorrents.addAll(parseApiTorrents(gallery));
-            try (Stream<Path> stream = Files.list(gallery.getDir()).filter(x -> Files.isRegularFile(x) && x.toString().endsWith(".torrent"))) {
-                for (Path torrent : (Iterable<Path>) stream::iterator) {
-                    ApiTorrent apiTorrent = null;
-                    for (ApiTorrent apiTorrentCandidate : apiTorrents) {
-                        if (apiTorrentCandidate.getTorrentSize() == Files.size(torrent)
-                                && Files.getLastModifiedTime(torrent).toInstant().isAfter(apiTorrentCandidate.getAddedDateTime())) {
-                            apiTorrent = apiTorrentCandidate;
-                            break;
+            if (Files.exists(gallery.getDir())) {
+                try (Stream<Path> stream = Files.list(gallery.getDir()).filter(x -> Files.isRegularFile(x) && x.toString().endsWith(".torrent"))) {
+                    for (Path torrent : (Iterable<Path>) stream::iterator) {
+                        ApiTorrent apiTorrent = null;
+                        for (ApiTorrent apiTorrentCandidate : apiTorrents) {
+                            if (apiTorrentCandidate.getTorrentSize() == Files.size(torrent)
+                                    && Files.getLastModifiedTime(torrent).toInstant().isAfter(apiTorrentCandidate.getAddedDateTime())) {
+                                apiTorrent = apiTorrentCandidate;
+                                break;
+                            }
+                        }
+
+                        if (apiTorrent == null) {
+                            LOGGER.debug("Deleting archived torrent not found on API: \"{}\"", torrent.getFileName());
+                            Files.delete(torrent);
+                        } else {
+                            LOGGER.debug("Skipping archived torrent found on API: \"{}\"", torrent.getFileName());
+                            apiTorrents.remove(apiTorrent);
                         }
                     }
-
-                    if (apiTorrent == null) {
-                        LOGGER.debug("Deleting archived torrent not found on API: \"{}\"", torrent.getFileName());
-                        Files.delete(torrent);
-                    } else {
-                        LOGGER.debug("Skipping archived torrent found on API: \"{}\"", torrent.getFileName());
-                        apiTorrents.remove(apiTorrent);
-                    }
+                } catch (IOException e) {
+                    throw new RipPandaException("Could not traverse the given archive directory.", e);
                 }
-            } catch (IOException e) {
-                throw new RipPandaException("Could not traverse the given archive directory.", e);
             }
         }
 

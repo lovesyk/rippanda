@@ -6,8 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -87,19 +85,29 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
 
         int failureCount = 0;
         int maxFailureCount = 3;
-        for (Gallery gallery : parseGalleries(getSettings().getArchiveDirectory())) {
-            if (failureCount > maxFailureCount) {
-                throw new RipPandaException(String.format("Encountered more than %s failures successively. Aborting...", maxFailureCount));
-            }
 
-            try {
-                process(gallery);
-                failureCount = 0;
-            } catch (RipPandaException e) {
-                LOGGER.warn("Failed processing gallery. Waiting for 10 seconds before continuing...", e);
-                ++failureCount;
-                Thread.sleep(1000 * 10);
+        try (Stream<Path> stream = Files.walk(getSettings().getArchiveDirectory()).filter(Files::isDirectory)) {
+            for (Path directory : (Iterable<Path>) stream::iterator) {
+                Gallery gallery = parseGallery(directory);
+                if (gallery != null) {
+                    LOGGER.debug("Found gallery with ID \"{}\" and token \"{}\".", gallery.getId(), gallery.getToken());
+
+                    try {
+                        process(gallery);
+                        failureCount = 0;
+                    } catch (RipPandaException e) {
+                        LOGGER.warn("Failed processing gallery. Waiting for 10 seconds before continuing...", e);
+                        ++failureCount;
+                        Thread.sleep(1000 * 10);
+                    }
+
+                    if (failureCount > maxFailureCount) {
+                        throw new RipPandaException(String.format("Encountered more than %s failures successively. Aborting...", maxFailureCount));
+                    }
+                }
             }
+        } catch (IOException e) {
+            throw new RipPandaException("Could not traverse the given archive directory.", e);
         }
 
         deleteSuccessTempFile();
@@ -167,67 +175,45 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
     }
 
     /**
-     * Parses all galleries in the given directory.
-     * 
-     * @param path the path to search for galleries in
-     * @return all galleries, never <code>null</code>
-     * @throws RipPandaException on failure
-     */
-    private List<Gallery> parseGalleries(Path path) throws RipPandaException {
-        List<Gallery> galleries = new ArrayList<>();
-        try (Stream<Path> stream = Files.walk(path).skip(1)) {
-            for (Path entry : (Iterable<Path>) stream::iterator) {
-                if (entry.getFileName().toString().equals(PAGE_FILENAME)) {
-                    Gallery gallery = parseGallery(entry);
-                    if (gallery != null) {
-                        LOGGER.debug("Found gallery with ID \"{}\" and token \"{}\".", gallery.getId(), gallery.getToken());
-                        galleries.add(gallery);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new RipPandaException("Could not traverse the given archive directory.", e);
-        }
-
-        return galleries;
-    }
-
-    /**
      * Parses a single gallery, assuming it resides in the same folder as the page
      * file given.
      * <p>
      * To ensure quick parsing this is done purely by text regex without actually
      * parsing the HTML.
      * 
-     * @param pageFile the page file to use for base information
+     * @param directory the parent directory of the potential gallery
      * @return the parsed gallery
      * @throws RipPandaException on failure
      */
-    private Gallery parseGallery(Path pageFile) throws RipPandaException {
+    private Gallery parseGallery(Path directory) throws RipPandaException {
         Gallery gallery = null;
 
-        Path parent = pageFile.getParent();
-        if (isRequired(parent)) {
-            try (Stream<String> stream = Files.lines(pageFile)) {
-                for (String line : (Iterable<String>) stream::iterator) {
-                    Matcher matcher = GALLERY_URL_PATTERN.matcher(line);
-                    if (matcher.find()) {
-                        int id;
-                        try {
-                            id = Integer.valueOf(matcher.group(1));
-                        } catch (NumberFormatException e) {
-                            LOGGER.warn("Failed parsing gallery ID, this line will be skipped.", e);
-                            continue;
+        Path pageFile = directory.resolve(PAGE_FILENAME);
+        if (Files.exists(pageFile)) {
+            if (isRequired(directory)) {
+                try (Stream<String> stream = Files.lines(pageFile)) {
+                    for (String line : (Iterable<String>) stream::iterator) {
+                        Matcher matcher = GALLERY_URL_PATTERN.matcher(line);
+                        if (matcher.find()) {
+                            int id;
+                            try {
+                                id = Integer.valueOf(matcher.group(1));
+                            } catch (NumberFormatException e) {
+                                LOGGER.warn("Failed parsing gallery ID, this line will be skipped.", e);
+                                continue;
+                            }
+                            String token = matcher.group(2);
+                            gallery = new Gallery(id, token, pageFile.getParent());
                         }
-                        String token = matcher.group(2);
-                        gallery = new Gallery(id, token, pageFile.getParent());
                     }
+                } catch (IOException e) {
+                    LOGGER.warn("Failed reading file, it will be skipped.", e);
                 }
-            } catch (IOException e) {
-                LOGGER.warn("Failed reading file, it will be skipped.", e);
+            } else {
+                LOGGER.debug("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", directory);
             }
         } else {
-            LOGGER.debug("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", parent);
+            LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
         }
 
         return gallery;

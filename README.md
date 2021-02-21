@@ -4,14 +4,15 @@ rippanda is an archiver tool for certain gallery websites using the panda-focuse
 
 ```
 Usage: [-a=path] [-d=time] [-p=address] [-s=path] [-e=element] -u=url -c=cookies... <operationMode>
-  <operationMode>        Operation mode: DOWNLOAD, UPDATE (default: DOWNLOAD)
-  -a, --archive-dir=path Directory containing archived galleries (default: .)
-  -c, --cookies=cookies  Log-in / perk cookies in key=value pairs separated by ;
-  -d, --delay=time       Minimum delay between web request in ISO-8601 time format (default: 5S)
-  -e, --skip=element     Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)
-  -p, --proxy=address    SOCKS5 proxy to use for network requests and DNS resolution.
-  -s, --success-dir=path Directory containing success files (default: .)
-  -u, --url=url          Base URL to use for web requests or a more specific search URL if in download mode
+  <operationMode>              Operation mode: DOWNLOAD, UPDATE (default: DOWNLOAD)
+  -a, --archive-dir=path       Directory containing archived galleries (default: .)
+  -c, --cookies=cookies        Log-in / perk cookies in key=value pairs separated by ;
+  -d, --delay=time             Minimum delay between web request in ISO-8601 time format (default: 5S)
+  -i, --update-interval=period Minimum interval when deciding whether to update a gallery in ISO-8601 period format (default: 1M)
+  -e, --skip=element           Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)
+  -p, --proxy=address          SOCKS5 proxy to use for network requests and DNS resolution.
+  -s, --success-dir=path       Directory containing success files (default: .)
+  -u, --url=url                Base URL to use for web requests or a more specific search URL if in download mode
 
 Example: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 4S download
 ```
@@ -26,8 +27,8 @@ Currently the following elements will be downloaded and updated:
 - a high-quality thumbnail
 - all torrent files associated with the gallery or previous versions
 
-The update logic is subject to improvements but for now behaves as following:
-1. A gallery will not be updated if the directory it resides in has been changed within a month.
+The update logic behaves as following:
+1. A gallery will not be updated if the directory it resides in has been changed within the update inverval.
 2. API metadata and the web page will always be updated if the whole gallery is not to be excluded by the above rule.
 3. Torrent files will be updated if their count on the disk differs from the count specified by the updated metadata.
 4. ZIP file and thumbnail will only be updated if their files are missing.

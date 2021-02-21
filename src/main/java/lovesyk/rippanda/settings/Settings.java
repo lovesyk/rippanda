@@ -45,8 +45,11 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-u", "--url" }, description = "Base URL to use for web requests or a more specific search URL if in download mode", required = true)
     private URI uri;
     @Option(names = { "-d", "--delay" }, description = "Minimum delay between web request in ISO-8601 time format"
-            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "5S", converter = DelayConverter.class)
+            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "5S", converter = TimeConverter.class)
     private Duration requestDelay;
+    @Option(names = { "-i", "--update-interval" }, description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format"
+            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "1M", converter = PeriodConverter.class)
+    private Duration updateInterval;
     @Option(names = { "-a", "--archive-dir" }, description = "Directory containing archived galleries" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
     private Path archiveDirectory;
     @Option(names = { "-s", "--success-dir" }, description = "Directory containing success files" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
@@ -137,6 +140,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Proxy: {}", getProxy());
         LOGGER.info("URL: {}", getUri());
         LOGGER.info("Request delay: {}", getRequestDelay());
+        LOGGER.info("Update interval: {}", getUpdateInterval());
         LOGGER.info("Archive directory: {}", getArchiveDirectory());
         LOGGER.info("Success directory: {}", getSuccessDirectory());
         LOGGER.info("Metadata active: {}", isMetadataActive());
@@ -188,6 +192,15 @@ public class Settings implements Callable<Integer> {
      * @return the request delay
      */
     public Duration getRequestDelay() {
+        return requestDelay;
+    }
+
+    /**
+     * Gets the update interval for deciding whether to update a gallery.
+     * 
+     * @return the update interval
+     */
+    public Duration getUpdateInterval() {
         return requestDelay;
     }
 

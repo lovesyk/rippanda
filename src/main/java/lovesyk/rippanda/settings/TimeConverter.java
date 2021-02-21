@@ -5,9 +5,9 @@ import java.time.Duration;
 import picocli.CommandLine.ITypeConverter;
 
 /**
- * The converter to process user-input delays.
+ * The converter to process user-input time durations.
  */
-class DelayConverter implements ITypeConverter<Duration> {
+class TimeConverter implements ITypeConverter<Duration> {
     private static final String TIME_PREFIX = "PT";
 
     /**

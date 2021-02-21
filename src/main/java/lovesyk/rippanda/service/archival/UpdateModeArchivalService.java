@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -162,7 +161,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Path dir) throws RipPandaException {
-        Instant threshold = Instant.now().minus(30, ChronoUnit.DAYS);
+        Instant threshold = Instant.now().minus(getSettings().getUpdateInterval());
         FileTime lastModifiedTime;
         try {
             lastModifiedTime = Files.getLastModifiedTime(dir);

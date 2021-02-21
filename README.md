@@ -30,7 +30,7 @@ Currently the following elements will be downloaded and updated:
 The update logic behaves as following:
 1. A gallery will not be updated if the directory it resides in has been changed within the update inverval.
 2. API metadata and the web page will always be updated if the whole gallery is not to be excluded by the above rule.
-3. Torrent files will be updated if their count on the disk differs from the count specified by the updated metadata.
+3. Torrent files will be updated / removed if they do not match the API files by comparing their file size and timestamps.
 4. ZIP file and thumbnail will only be updated if their files are missing.
 
 On errors the tool will retry a few times after waiting a bit but cancel the process if it deems the servers to be down or for the user to be banned. It will make sure the non-temporary success file only contains fully downloaded / updated galleries.

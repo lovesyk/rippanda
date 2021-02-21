@@ -48,7 +48,7 @@ public class Settings implements Callable<Integer> {
             + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "5S", converter = TimeConverter.class)
     private Duration requestDelay;
     @Option(names = { "-i", "--update-interval" }, description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format"
-            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "1M", converter = PeriodConverter.class)
+            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "30D", converter = PeriodConverter.class)
     private Duration updateInterval;
     @Option(names = { "-a", "--archive-dir" }, description = "Directory containing archived galleries" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
     private Path archiveDirectory;

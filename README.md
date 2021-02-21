@@ -8,7 +8,7 @@ Usage: [-a=path] [-d=time] [-p=address] [-s=path] [-e=element] -u=url -c=cookies
   -a, --archive-dir=path       Directory containing archived galleries (default: .)
   -c, --cookies=cookies        Log-in / perk cookies in key=value pairs separated by ;
   -d, --delay=time             Minimum delay between web request in ISO-8601 time format (default: 5S)
-  -i, --update-interval=period Minimum interval when deciding whether to update a gallery in ISO-8601 period format (default: 1M)
+  -i, --update-interval=period Minimum interval when deciding whether to update a gallery in ISO-8601 period format (default: 30D)
   -e, --skip=element           Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)
   -p, --proxy=address          SOCKS5 proxy to use for network requests and DNS resolution.
   -s, --success-dir=path       Directory containing success files (default: .)

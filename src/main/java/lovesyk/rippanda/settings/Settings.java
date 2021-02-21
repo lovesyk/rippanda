@@ -201,7 +201,7 @@ public class Settings implements Callable<Integer> {
      * @return the update interval
      */
     public Duration getUpdateInterval() {
-        return requestDelay;
+        return updateInterval;
     }
 
     /**

@@ -87,7 +87,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
         }
 
         if (apiTorrents.isEmpty()) {
-            LOGGER.info("Torrents do not need to be archived.");
+            LOGGER.debug("Torrents do not need to be archived.");
         } else {
             LOGGER.info("Saving torrents...");
             Document document = getWebClient().loadTorrentPage(gallery.getId(), gallery.getToken());
@@ -230,6 +230,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
      * @throws InterruptedException on interruption
      */
     private boolean downloadTorrentFile(String torrentUrl, Gallery gallery, boolean failAcceptable) throws RipPandaException, InterruptedException {
+        LOGGER.debug("Saving torrent from URL: " + torrentUrl);
         return getWebClient().downloadFile(torrentUrl, (downloadableTorrent) -> {
             if ("application/x-bittorrent".equals(downloadableTorrent.getMimeType())) {
                 String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableTorrent.getName(), false);

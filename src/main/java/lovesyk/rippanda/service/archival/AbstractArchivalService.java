@@ -169,7 +169,7 @@ public abstract class AbstractArchivalService {
         String filename = file.getFileName().toString();
         boolean result = filename.startsWith(SUCCESS_FILENAME_PREFIX) && filename.endsWith(SUCCESS_FILENAME_SUFFIX);
 
-        LOGGER.debug("File + \"" + file + "\" is " + (result ? StringUtils.EMPTY : "not ") + "a success file.");
+        LOGGER.debug("File \"" + file + "\" is " + (result ? StringUtils.EMPTY : "not ") + "a success file.");
 
         return result;
     }

@@ -86,6 +86,7 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
         while (pageUrl != null) {
             Document searchResultPage = null;
             for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+                LOGGER.debug("Loading search result: {}", pageUrl);
                 try {
                     searchResultPage = getWebClient().loadDocument(pageUrl);
                     break;

@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.inject.Instance;
@@ -28,6 +30,8 @@ public abstract class AbstractArchivalService {
     private static final String SUCCESS_FILENAME_FORMAT = SUCCESS_FILENAME_PREFIX + "%s" + SUCCESS_FILENAME_SUFFIX;
     private static final String SUCCESS_TEMP_FILENAME_FORMAT = String.format(SUCCESS_FILENAME_FORMAT, "%s-temp");
     private static final String LINE_ENDING = StringUtils.CR + StringUtils.LF;
+
+    private static final Logger LOGGER = LogManager.getLogger(AbstractArchivalService.class);
 
     private Path successFile;
     private Path successTempFile;
@@ -76,6 +80,7 @@ public abstract class AbstractArchivalService {
      * @throws RipPandaException on failure
      */
     protected void initDirs() throws RipPandaException {
+        LOGGER.debug("Making sure success and archive directories exist...");
         if (!Files.isDirectory(getSettings().getSuccessDirectory().getParent())) {
             throw new RipPandaException("Parent of the success directory does not exist.");
         }
@@ -123,6 +128,7 @@ public abstract class AbstractArchivalService {
      * @throws RipPandaException on failure
      */
     protected void deleteSuccessTempFile() throws RipPandaException {
+        LOGGER.debug("Cleaning up possibly remaining temporary success file...");
         try {
             Files.deleteIfExists(successTempFile);
         } catch (IOException e) {
@@ -161,7 +167,11 @@ public abstract class AbstractArchivalService {
      */
     private boolean isSuccessFile(Path file) {
         String filename = file.getFileName().toString();
-        return filename.startsWith(SUCCESS_FILENAME_PREFIX) && filename.endsWith(SUCCESS_FILENAME_SUFFIX);
+        boolean result = filename.startsWith(SUCCESS_FILENAME_PREFIX) && filename.endsWith(SUCCESS_FILENAME_SUFFIX);
+
+        LOGGER.debug("File + \"" + file + "\" is " + (result ? StringUtils.EMPTY : "not ") + "a success file.");
+
+        return result;
     }
 
     /**
@@ -174,7 +184,10 @@ public abstract class AbstractArchivalService {
     private void loadSuccessFileIfUpdated(Path file) throws RipPandaException, IOException {
         FileTime lastModifiedTime = Files.getLastModifiedTime(file);
         if (lastModifiedTime.toInstant().isAfter(getSuccessIdsUpdated())) {
+            LOGGER.debug("Success file was updated after " + getSuccessIdsUpdated());
             loadSuccessFile(file);
+        } else {
+            LOGGER.debug("Success file will not be updated since it was was not updated after " + getSuccessIdsUpdated());
         }
     }
 
@@ -186,6 +199,7 @@ public abstract class AbstractArchivalService {
      * @throws IOException       on I/O failure
      */
     private void loadSuccessFile(Path file) throws RipPandaException, IOException {
+        LOGGER.debug("Loading success file: " + file);
         try (Stream<String> stream = Files.lines(file)) {
             for (String line : (Iterable<String>) stream::iterator) {
                 loadSuccessEntry(line);
@@ -255,6 +269,7 @@ public abstract class AbstractArchivalService {
      * @throws RipPandaException on failure
      */
     protected void addTempSuccessId(int id) throws RipPandaException {
+        LOGGER.debug("Adding gallery ID \"" + id + "\" to temporary success file...");
         try {
             Files.writeString(getSuccessTempFile(), String.valueOf(id) + LINE_ENDING, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {
@@ -269,6 +284,7 @@ public abstract class AbstractArchivalService {
      * @throws RipPandaException on failure.
      */
     protected void addSuccessId(int id) throws RipPandaException {
+        LOGGER.debug("Adding gallery ID \"" + id + "\" to success file...");
         try {
             Files.writeString(getSuccessFile(), String.valueOf(id) + LINE_ENDING, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {

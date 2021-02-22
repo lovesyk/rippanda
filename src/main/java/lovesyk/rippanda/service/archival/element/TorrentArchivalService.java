@@ -89,7 +89,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
         if (apiTorrents.isEmpty()) {
             LOGGER.info("Torrents do not need to be archived.");
         } else {
-            LOGGER.info("Torrents need to be archived.");
+            LOGGER.info("Saving torrents...");
             Document document = getWebClient().loadTorrentPage(gallery.getId(), gallery.getToken());
 
             Elements torrentUrlElements = document.select("#torrentinfo form a[href*=.torrent]");
@@ -199,7 +199,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
         boolean success = downloadTorrentFile(torrentUrl, gallery, true);
 
         if (!success) {
-            LOGGER.info("Did not receive torrent file, tracker cookies might be missing. Trying to obtain them...");
+            LOGGER.debug("Did not receive torrent file, tracker cookies might be missing. Trying to obtain them...");
             Element personalizedElement = torrentUrlElements.first();
 
             Pattern pattern = Pattern.compile("document\\.location='(.+?)'");

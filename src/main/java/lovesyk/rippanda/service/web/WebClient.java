@@ -154,7 +154,7 @@ public class WebClient implements IWebClient {
         LocalDateTime now = LocalDateTime.now();
         long millisToWait = now.until(until, ChronoUnit.MILLIS);
         if (millisToWait > 0) {
-            LOGGER.info("Waiting for {} seconds...", millisToWait / 1000.0);
+            LOGGER.debug("Waiting for {} seconds...", millisToWait / 1000.0);
             Thread.sleep(millisToWait);
         } else {
             LOGGER.debug("No waiting required at this point.");

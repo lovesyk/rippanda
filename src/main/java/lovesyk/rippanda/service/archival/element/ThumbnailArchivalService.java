@@ -42,10 +42,10 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
     @Override
     public void process(Gallery gallery) throws RipPandaException, InterruptedException {
         if (isRequired(gallery)) {
-            LOGGER.info("Thumbnail needs to be archived.");
+            LOGGER.info("Saving thumbnail...");
             save(gallery);
         } else {
-            LOGGER.info("Thumbnail does not need to be archived.");
+            LOGGER.debug("Thumbnail does not need to be archived.");
         }
     }
 

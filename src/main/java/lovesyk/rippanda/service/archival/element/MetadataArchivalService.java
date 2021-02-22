@@ -91,10 +91,10 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     @Override
     public void process(Gallery gallery) throws RipPandaException, InterruptedException {
         if (isRequired(gallery)) {
-            LOGGER.info("Metadata needs to be archived.");
+            LOGGER.info("Saving metadata...");
             save(gallery);
         } else {
-            LOGGER.info("Metadata does not need to be archived.");
+            LOGGER.debug("Metadata does not need to be archived.");
         }
     }
 
@@ -124,8 +124,6 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
         ensureLoaded(gallery);
-
-        LOGGER.info("Saving metadata...");
         initDir(gallery.getDir());
         save(file -> write(gallery.getMetadata(), file), gallery.getDir(), FILENAME);
     }

@@ -48,10 +48,10 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
     @Override
     public void process(Gallery gallery) throws RipPandaException, InterruptedException {
         if (isRequired(gallery)) {
-            LOGGER.info("ZIP needs to be archived.");
+            LOGGER.info("Saving ZIP...");
             save(gallery);
         } else {
-            LOGGER.info("ZIP does not need to be archived.");
+            LOGGER.debug("ZIP does not need to be archived.");
         }
     }
 
@@ -92,7 +92,6 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
 
         String archiveUrl = loadArchiveUrl(gallery.getId(), gallery.getToken(), archiverKey);
 
-        LOGGER.info("Saving archive...");
         getWebClient().downloadFile(archiveUrl, (downloadableArchive) -> {
             initDir(gallery.getDir());
             String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableArchive.getName(), true);
@@ -131,12 +130,12 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      * @throws InterruptedException on interruption
      */
     private String loadArchiveUrl(int id, String token, String archiverKey) throws RipPandaException, InterruptedException {
-        LOGGER.info("Generating ZIP URL...");
+        LOGGER.debug("Generating ZIP URL...");
         Element continueLink = null;
         for (int i = 0; i < ARCHIVE_PREPARATION_RETRIES && continueLink == null; ++i) {
             if (i > 0 && continueLink == null) {
                 Duration delay = ARCHIVE_PREPARATION_BASE_DELAY.multipliedBy(i * i);
-                LOGGER.info(String.format("Archive not ready yet. Waiting for {}...", delay));
+                LOGGER.debug(String.format("Archive not ready yet. Waiting for {}...", delay));
                 Thread.sleep(delay.toMillis());
             }
 

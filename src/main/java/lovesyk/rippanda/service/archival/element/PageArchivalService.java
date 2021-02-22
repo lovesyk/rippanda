@@ -40,10 +40,10 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
     @Override
     public void process(Gallery gallery) throws RipPandaException, InterruptedException {
         if (isRequired(gallery)) {
-            LOGGER.info("Page needs to be archived.");
+            LOGGER.info("Saving page...");
             save(gallery);
         } else {
-            LOGGER.info("Page does not need to be archived.");
+            LOGGER.debug("Page does not need to be archived.");
         }
     }
 
@@ -73,8 +73,6 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
      * @throws InterruptedException on interruption
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
-        LOGGER.info("Saving HTML...");
-
         Document document = getWebClient().loadPage(gallery.getId(), gallery.getToken());
         Element verificationElement = document.getElementById("rating_label");
         if (verificationElement == null) {

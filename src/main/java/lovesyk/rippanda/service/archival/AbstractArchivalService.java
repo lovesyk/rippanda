@@ -155,6 +155,7 @@ public abstract class AbstractArchivalService {
             throw new RipPandaException("Failed reading success file.", e);
         }
 
+        LOGGER.debug("Success files up-to-date as of " + now);
         setSuccessIdsUpdated(now);
     }
 

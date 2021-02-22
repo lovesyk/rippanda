@@ -111,7 +111,7 @@ public abstract class AbstractArchivalService {
 
         deleteSuccessTempFile();
 
-        try (Stream<Path> stream = Files.walk(getSettings().getSuccessDirectory())) {
+        try (Stream<Path> stream = Files.walk(getSettings().getSuccessDirectory()).filter(Files::isRegularFile)) {
             for (Path file : (Iterable<Path>) stream::iterator) {
                 if (isSuccessFile(file)) {
                     loadSuccessFile(file);
@@ -145,7 +145,7 @@ public abstract class AbstractArchivalService {
     protected void updateSuccessIds() throws RipPandaException {
         Instant now = Instant.now();
 
-        try (Stream<Path> stream = Files.walk(getSettings().getSuccessDirectory()).skip(1)) {
+        try (Stream<Path> stream = Files.walk(getSettings().getSuccessDirectory()).filter(Files::isRegularFile)) {
             for (Path file : (Iterable<Path>) stream::iterator) {
                 if (isSuccessFile(file) && !file.equals(getSuccessFile()) && !file.equals(getSuccessTempFile())) {
                     loadSuccessFileIfUpdated(file);

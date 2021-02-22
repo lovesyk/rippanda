@@ -138,7 +138,7 @@ public class WebClient implements IWebClient {
      */
     private void waitToHonorRequestDelay() throws InterruptedException {
         LocalDateTime until = getPreviousRequestTime().plus(getRequestDelay());
-        LOGGER.debug("Waiting until {} would be required to honor the request delay.", until);
+        LOGGER.trace("Waiting until {} would be required to honor the request delay.", until);
         sleep(until);
     }
 

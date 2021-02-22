@@ -133,7 +133,7 @@ public class WebClientResponseFactory {
      * @return the filename
      */
     private String getFilename(URI responseUri, CloseableHttpResponse response) {
-        LOGGER.debug("Trying to find filename in HTTP headers...");
+        LOGGER.trace("Trying to find filename in HTTP headers...");
         String filename = null;
 
         Header contentDispositionHeader = response.getFirstHeader(CONTENT_DISPOSITION_HEADER_NAME);
@@ -147,11 +147,11 @@ public class WebClientResponseFactory {
         }
 
         if (filename == null) {
-            LOGGER.debug("No filename found in HTTP headers, inferring it from the URL...");
+            LOGGER.trace("No filename found in HTTP headers, inferring it from the URL...");
             filename = FilenameUtils.getName(responseUri.getPath());
         }
 
-        LOGGER.debug("Using filename \"{}\".", filename);
+        LOGGER.trace("Using filename \"{}\".", filename);
         return filename;
     }
 

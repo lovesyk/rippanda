@@ -64,7 +64,7 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      * @throws InterruptedException on interruption
      */
     public void load(Gallery gallery) throws RipPandaException, InterruptedException {
-        LOGGER.info("Parsing metadata...");
+        LOGGER.debug("Parsing metadata...");
 
         Map<Integer, String> idTokenPairs = Collections.singletonMap(gallery.getId(), gallery.getToken());
         JsonObject gdata = getWebClient().loadMetadata(idTokenPairs);

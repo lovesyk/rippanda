@@ -155,7 +155,7 @@ public abstract class AbstractArchivalService {
             throw new RipPandaException("Failed reading success file.", e);
         }
 
-        LOGGER.debug("Success files up-to-date as of " + now);
+        LOGGER.trace("Success files up-to-date as of " + now);
         setSuccessIdsUpdated(now);
     }
 
@@ -170,7 +170,7 @@ public abstract class AbstractArchivalService {
         String filename = file.getFileName().toString();
         boolean result = filename.startsWith(SUCCESS_FILENAME_PREFIX) && filename.endsWith(SUCCESS_FILENAME_SUFFIX);
 
-        LOGGER.debug("File \"" + file + "\" is " + (result ? StringUtils.EMPTY : "not ") + "a success file.");
+        LOGGER.trace("File \"" + file + "\" is " + (result ? StringUtils.EMPTY : "not ") + "a success file.");
 
         return result;
     }
@@ -185,10 +185,10 @@ public abstract class AbstractArchivalService {
     private void loadSuccessFileIfUpdated(Path file) throws RipPandaException, IOException {
         FileTime lastModifiedTime = Files.getLastModifiedTime(file);
         if (lastModifiedTime.toInstant().isAfter(getSuccessIdsUpdated())) {
-            LOGGER.debug("Success file was updated after " + getSuccessIdsUpdated());
+            LOGGER.trace("Success file was updated after " + getSuccessIdsUpdated());
             loadSuccessFile(file);
         } else {
-            LOGGER.debug("Success file will not be updated since it was was not updated after " + getSuccessIdsUpdated());
+            LOGGER.trace("Success file will not be updated since it was was not updated after " + getSuccessIdsUpdated());
         }
     }
 

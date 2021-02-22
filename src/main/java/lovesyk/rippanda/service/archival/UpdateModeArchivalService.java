@@ -207,7 +207,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                     LOGGER.warn("Failed reading file, it will be skipped.", e);
                 }
             } else {
-                LOGGER.info("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", directory);
+                LOGGER.debug("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", directory);
             }
         } else {
             LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);

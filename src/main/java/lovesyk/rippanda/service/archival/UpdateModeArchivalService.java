@@ -124,7 +124,9 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         int id = gallery.getId();
         LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\"", gallery.getId(), gallery.getToken());
 
-        addTempSuccessId(id);
+        if (!isInSuccessIds(id)) {
+            addTempSuccessId(id);
+        }
 
         RipPandaException lastException = null;
         for (IElementArchivalService archivingService : getArchivingServiceList()) {

@@ -102,39 +102,11 @@ public class Settings implements Callable<Integer> {
      * Initializes output logging according to specified settings.
      */
     private void initLogging() {
-        Level level;
-        switch (verbosity.length) {
-        case 0:
-            level = Level.OFF;
-            break;
-        case 1:
-            level = Level.FATAL;
-            break;
-        case 2:
-            level = Level.ERROR;
-            break;
-        case 3:
-            level = Level.WARN;
-            break;
-        case 4:
-            level = Level.INFO;
-            break;
-        case 5:
-            level = Level.DEBUG;
-            break;
-        case 6:
-            level = Level.TRACE;
-            break;
-        default:
-            level = Level.ALL;
-            break;
-        }
-
         // https://stackoverflow.com/a/23434603
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
-        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-        loggerConfig.setLevel(level);
+        LoggerConfig loggerConfig = config.getLoggerConfig("lovesyk.rippanda");
+        loggerConfig.setLevel(getLoggingVerbosity());
         ctx.updateLoggers();
     }
 
@@ -195,7 +167,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Thumbnail active: {}", isThumbnailActive());
         LOGGER.info("Torrent active: {}", isTorrentActive());
         LOGGER.info("ZIP active: {}", isZipActive());
-        LOGGER.info("Logging verbosity: ", String.valueOf(verbosity.length));
+        LOGGER.info("Logging verbosity: {}", getLoggingVerbosity());
     }
 
     /**
@@ -331,5 +303,42 @@ public class Settings implements Callable<Integer> {
      */
     public boolean isZipActive() {
         return !elementsToSkip.contains(SKIP_ELEMENTS_ZIP);
+    }
+
+    /**
+     * Creates a logging level based on user-input.
+     * 
+     * @return the logging level to use for the application
+     */
+    public Level getLoggingVerbosity() {
+        Level level;
+        switch (verbosity.length) {
+        case 0:
+            level = Level.OFF;
+            break;
+        case 1:
+            level = Level.FATAL;
+            break;
+        case 2:
+            level = Level.ERROR;
+            break;
+        case 3:
+            level = Level.WARN;
+            break;
+        case 4:
+            level = Level.INFO;
+            break;
+        case 5:
+            level = Level.DEBUG;
+            break;
+        case 6:
+            level = Level.TRACE;
+            break;
+        default:
+            level = Level.ALL;
+            break;
+        }
+
+        return level;
     }
 }

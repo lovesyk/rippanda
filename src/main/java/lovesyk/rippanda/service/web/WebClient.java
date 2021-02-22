@@ -128,7 +128,7 @@ public class WebClient implements IWebClient {
      * Initializes the previous network request time.
      */
     private void initPreviousRequestTime() {
-        previousRequestTime = LocalDateTime.now().minusYears(1);
+        previousRequestTime = LocalDateTime.now();
     }
 
     /**

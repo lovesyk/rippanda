@@ -10,8 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import jakarta.inject.Singleton;
 import lovesyk.rippanda.exception.RipPandaException;
@@ -57,6 +61,8 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-e", "--skip" }, description = "Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)"
             + DESCRIPTION_DEFAULT_FRAGMENT)
     private HashSet<String> elementsToSkip = new HashSet<String>();
+    @Option(names = { "-v", "--verbose" }, description = "Specify multiple -v options to set logging verbosity. (default: specified 4 times)")
+    private boolean[] verbosity = new boolean[] { true, true, true, true };
 
     // not configurable for now
     private String userAgent = null;
@@ -78,6 +84,7 @@ public class Settings implements Callable<Integer> {
             throw new RipPandaException("Invalid command line arguments.");
         }
 
+        initLogging();
         initCookies();
         validateElementsToSkip();
         print();
@@ -89,6 +96,46 @@ public class Settings implements Callable<Integer> {
     @Override
     public Integer call() {
         return 0;
+    }
+
+    /**
+     * Initializes output logging according to specified settings.
+     */
+    private void initLogging() {
+        Level level;
+        switch (verbosity.length) {
+        case 0:
+            level = Level.OFF;
+            break;
+        case 1:
+            level = Level.FATAL;
+            break;
+        case 2:
+            level = Level.ERROR;
+            break;
+        case 3:
+            level = Level.WARN;
+            break;
+        case 4:
+            level = Level.INFO;
+            break;
+        case 5:
+            level = Level.DEBUG;
+            break;
+        case 6:
+            level = Level.TRACE;
+            break;
+        default:
+            level = Level.ALL;
+            break;
+        }
+
+        // https://stackoverflow.com/a/23434603
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        loggerConfig.setLevel(level);
+        ctx.updateLoggers();
     }
 
     /**

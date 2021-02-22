@@ -13,6 +13,7 @@ Usage: [-a=path] [-d=time] [-p=address] [-s=path] [-e=element] -u=url -c=cookies
   -p, --proxy=address          SOCKS5 proxy to use for network requests and DNS resolution.
   -s, --success-dir=path       Directory containing success files (default: .)
   -u, --url=url                Base URL to use for web requests or a more specific search URL if in download mode
+  -v, --verbose                Specify multiple -v options to set logging verbosity. (default: specified 4 times)
 
 Example: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 4S download
 ```

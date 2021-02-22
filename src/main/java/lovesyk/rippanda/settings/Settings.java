@@ -195,6 +195,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Thumbnail active: {}", isThumbnailActive());
         LOGGER.info("Torrent active: {}", isTorrentActive());
         LOGGER.info("ZIP active: {}", isZipActive());
+        LOGGER.info("Logging verbosity: ", verbosity.length);
     }
 
     /**

@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -35,7 +37,7 @@ public abstract class AbstractArchivalService {
 
     private Path successFile;
     private Path successTempFile;
-    private Set<Integer> successIds;
+    private Map<Path, Set<Integer>> successFileIdsMap;
     private Instant successIdsUpdated;
 
     private final Settings settings;
@@ -106,7 +108,7 @@ public abstract class AbstractArchivalService {
      * @throws RipPandaException on failure
      */
     protected void initSuccessIds() throws RipPandaException {
-        successIds = new HashSet<>();
+        successFileIdsMap = new HashMap<>();
         successIdsUpdated = Instant.now();
 
         deleteSuccessTempFile();
@@ -201,29 +203,19 @@ public abstract class AbstractArchivalService {
      */
     private void loadSuccessFile(Path file) throws RipPandaException, IOException {
         LOGGER.debug("Loading success file: " + file);
+
+        Set<Integer> successIds = new LinkedHashSet<>();
+        successFileIdsMap.put(file, successIds);
         try (Stream<String> stream = Files.lines(file)) {
             for (String line : (Iterable<String>) stream::iterator) {
-                loadSuccessEntry(line);
+                int id;
+                try {
+                    id = Integer.valueOf(line);
+                } catch (NumberFormatException e) {
+                    throw new RipPandaException("Invalid gallery ID.", e);
+                }
+                successIds.add(id);
             }
-        }
-    }
-
-    /**
-     * Loads one line from a success file as ID.
-     * 
-     * @param line the line to load
-     * @throws RipPandaException on failure
-     */
-    private void loadSuccessEntry(String line) throws RipPandaException {
-        int id;
-        try {
-            id = Integer.valueOf(line);
-        } catch (NumberFormatException e) {
-            throw new RipPandaException("Invalid gallery ID.", e);
-        }
-
-        if (!isInSuccessIds(id)) {
-            successIds.add(id);
         }
     }
 
@@ -300,7 +292,13 @@ public abstract class AbstractArchivalService {
      * @return <code>true</code> if the ID is present, <code>false</code> otherwise
      */
     protected boolean isInSuccessIds(int id) {
-        return successIds.contains(id);
+        for (Set<Integer> successIds : successFileIdsMap.values()) {
+            if (successIds.contains(id)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

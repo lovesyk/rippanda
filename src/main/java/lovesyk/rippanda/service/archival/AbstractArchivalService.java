@@ -86,13 +86,13 @@ public abstract class AbstractArchivalService {
         if (!Files.isDirectory(getSettings().getSuccessDirectory().getParent())) {
             throw new RipPandaException("Parent of the success directory does not exist.");
         }
-        if (!Files.isDirectory(getSettings().getArchiveDirectory().getParent())) {
+        if (!Files.isDirectory(getSettings().getWritableArchiveDirectory().getParent())) {
             throw new RipPandaException("Parent of the success directory does not exist.");
         }
 
         try {
             Files.createDirectories(getSettings().getSuccessDirectory());
-            Files.createDirectories(getSettings().getArchiveDirectory());
+            Files.createDirectories(getSettings().getWritableArchiveDirectory());
         } catch (IOException e) {
             throw new RipPandaException("Could not create directory.", e);
         }

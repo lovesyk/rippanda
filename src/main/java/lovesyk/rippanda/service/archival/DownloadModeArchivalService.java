@@ -184,7 +184,7 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
 
             int id = parseGalleryId(galleryElement);
             String token = parseGalleryToken(galleryElement);
-            Gallery gallery = new Gallery(id, token, getSettings().getArchiveDirectory().resolve(String.valueOf(id)));
+            Gallery gallery = new Gallery(id, token, getSettings().getWritableArchiveDirectory().resolve(String.valueOf(id)));
 
             galleries.add(gallery);
         }

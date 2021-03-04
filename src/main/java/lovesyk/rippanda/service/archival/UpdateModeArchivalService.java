@@ -85,7 +85,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         int failureCount = 0;
         int maxFailureCount = 3;
 
-        try (Stream<Path> stream = Files.walk(getSettings().getArchiveDirectory()).filter(Files::isDirectory)) {
+        try (Stream<Path> stream = Files.walk(getSettings().getWritableArchiveDirectory()).filter(Files::isDirectory)) {
             for (Path directory : (Iterable<Path>) stream::iterator) {
                 Gallery gallery = parseGallery(directory);
                 if (gallery != null) {

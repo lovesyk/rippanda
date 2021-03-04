@@ -54,8 +54,8 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-i", "--update-interval" }, description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format"
             + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "30D", converter = PeriodConverter.class)
     private Duration updateInterval;
-    @Option(names = { "-a", "--archive-dir" }, description = "Directory containing archived galleries" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
-    private Path archiveDirectory;
+    @Option(names = { "-a", "--archive-dir" }, description = "Directories containing archived galleries" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
+    private List<Path> archiveDirectories;
     @Option(names = { "-s", "--success-dir" }, description = "Directory containing success files" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
     private Path successDirectory;
     @Option(names = { "-e", "--skip" }, description = "Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)"
@@ -160,7 +160,8 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("URL: {}", getUri());
         LOGGER.info("Request delay: {}", getRequestDelay());
         LOGGER.info("Update interval: {}", getUpdateInterval());
-        LOGGER.info("Archive directory: {}", getArchiveDirectory());
+        LOGGER.info("Archive directories: {}", getArchiveDirectories());
+        LOGGER.info("Writable archive directory: {}", getWritableArchiveDirectory());
         LOGGER.info("Success directory: {}", getSuccessDirectory());
         LOGGER.info("Metadata active: {}", isMetadataActive());
         LOGGER.info("Page active: {}", isPageActive());
@@ -225,12 +226,21 @@ public class Settings implements Callable<Integer> {
     }
 
     /**
-     * Gets the directory which contains archived galleries.
+     * Gets all directories which contain archived galleries.
      * 
-     * @return the archive directory
+     * @return the archive directories
      */
-    public Path getArchiveDirectory() {
-        return archiveDirectory;
+    public List<Path> getArchiveDirectories() {
+        return archiveDirectories;
+    }
+
+    /**
+     * Gets the writable directory which contains archived galleries.
+     * 
+     * @return the writable archive directory
+     */
+    public Path getWritableArchiveDirectory() {
+        return archiveDirectories.get(0);
     }
 
     /**

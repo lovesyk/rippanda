@@ -1,5 +1,6 @@
 package lovesyk.rippanda.service.archival;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -261,6 +262,7 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
             Map<Integer, Set<Integer>> childToParentIdMap) throws RipPandaException {
         LOGGER.info("Running cleaning process...");
 
+        long totalBytesSaved = 0l;
         for (Integer id : galleryIdToRemovableDirectoryMap.keySet()) {
             LOGGER.debug("Processing gallery ID {}...", id);
 
@@ -278,16 +280,26 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
 
             for (Integer outdatedId : outdatedIds) {
                 Set<Path> outdatedDirectories = galleryIdToRemovableDirectoryMap.get(outdatedId);
-                if (!outdatedDirectories.isEmpty()) {
-                    LOGGER.debug("Following directories will be removed: {}", outdatedDirectories);
+                for (Path outdatedDirectory : outdatedDirectories) {
+                    File outdatedDirectoryLegacy = outdatedDirectory.toFile();
+                    long bytesSaved = FileUtils.sizeOfDirectory(outdatedDirectoryLegacy);
+                    totalBytesSaved += bytesSaved;
 
-                    outdatedDirectories.stream().map(Path::toFile).forEach(FileUtils::deleteQuietly);
-                    outdatedDirectories.clear();
+                    try {
+                        FileUtils.deleteDirectory(outdatedDirectoryLegacy);
+                    } catch (IOException e) {
+                        throw new RipPandaException("Failed removing directory.", e);
+                    }
 
-                    removeSuccessId(outdatedId);
+                    LOGGER.info("Saved {} by removing: {}", FileUtils.byteCountToDisplaySize(bytesSaved), outdatedDirectories);
                 }
+                outdatedDirectories.clear();
+
+                removeSuccessId(outdatedId);
             }
         }
+
+        LOGGER.info("Cleaned up {}.", FileUtils.byteCountToDisplaySize(totalBytesSaved));
     }
 
     /**

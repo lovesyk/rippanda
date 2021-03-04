@@ -1,5 +1,6 @@
 package lovesyk.rippanda.service.web.api;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.jsoup.nodes.Document;
@@ -72,19 +73,6 @@ public interface IWebClient {
      * @throws InterruptedException on interruption
      */
     Document loadTorrentPage(int id, String token) throws RipPandaException, InterruptedException;
-
-//    /**   
-//     * Loads the downloadable torrent file for a gallery.
-//     * <p>
-//     * Delays specified by application settings will be honored.
-//     * 
-//     * @param id   the gallery ID
-//     * @param hash the torrent hash
-//     * @return the downloadable file, never <code>null</code>
-//     * @throws RipPandaException    on failure
-//     * @throws InterruptedException on interruption
-//     */
-//    DownloadableFile loadTorrent(int id, String hash) throws RipPandaException, InterruptedException;
 
     /**
      * Loads the HTML for a archive preparation page.

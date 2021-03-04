@@ -156,7 +156,7 @@ public class WebClientResponseFactory {
     }
 
     /**
-     * Parses a HTTP response into an HTML document.
+     * Parses a HTTP response into a HTML document.
      * 
      * @param request  the HTTP request
      * @param response the HTTP response

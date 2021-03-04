@@ -7,6 +7,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -207,5 +208,21 @@ public class WebClientResponseFactory {
         }
 
         return responseUri;
+    }
+
+    /**
+     * Parses a file into a HTML document.
+     * 
+     * @param path    the path to the file to parse
+     * @param baseUri the base URI of the HTML contents
+     * @return the HTML document, never <code>null</code>
+     * @throws RipPandaException on failure
+     */
+    public Document parseToDocument(Path path, URI baseUri) throws RipPandaException {
+        try {
+            return Jsoup.parse(path.toFile(), null, baseUri.toString());
+        } catch (IOException e) {
+            throw new RipPandaException("Failed parsing HTML document.", e);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package lovesyk.rippanda.service.archival;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -20,6 +21,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
+import lovesyk.rippanda.service.archival.api.FilesUtils;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
 import lovesyk.rippanda.settings.Settings;
 
@@ -317,5 +319,37 @@ public abstract class AbstractArchivalService {
      */
     private void setSuccessIdsUpdated(Instant successIdsUpdated) {
         this.successIdsUpdated = successIdsUpdated;
+    }
+
+    /**
+     * Removes a gallery ID from the users success file if present.
+     * 
+     * @param id the gallery ID to remove
+     * @throws RipPandaException on failure
+     */
+    protected void removeSuccessId(int id) throws RipPandaException {
+        Set<Integer> successIds = successFileIdsMap.get(successFile);
+        if (successIds.remove(id)) {
+            LOGGER.debug("Removing gallery ID \"{}\" from success file...");
+
+            Path successFile = getSuccessFile();
+            Path dir = successFile.getParent();
+            String fileName = successFile.getFileName().toString();
+            FilesUtils.save(this::writeSuccessFile, dir, fileName);
+        }
+    }
+
+    /**
+     * Writes the users success file to the specified path.
+     * 
+     * @param file the path to save the success file to
+     * @throws IOException on failure
+     */
+    protected void writeSuccessFile(Path file) throws IOException {
+        try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(file))) {
+            for (Integer successId : successFileIdsMap.get(getSuccessFile())) {
+                writer.write(successId + LINE_ENDING);
+            }
+        }
     }
 }

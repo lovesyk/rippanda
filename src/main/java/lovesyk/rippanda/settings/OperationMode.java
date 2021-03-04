@@ -12,5 +12,10 @@ public enum OperationMode {
     /**
      * Update mode results in already archived galleries being updated.
      */
-    UPDATE
+    UPDATE,
+
+    /**
+     * Cleanup mode results in outdated galleries being removed.
+     */
+    CLEANUP
 }

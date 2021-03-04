@@ -1,6 +1,8 @@
 package lovesyk.rippanda.service.web;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -312,6 +314,15 @@ public class WebClient implements IWebClient {
         } catch (IOException e) {
             throw new RipPandaException("Failed executing network request.", e);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Document loadDocument(Path path) throws RipPandaException {
+        URI baseUri = getRequestFactory().getBaseUri();
+        return getResponseFactory().parseToDocument(path, baseUri);
     }
 
     /**

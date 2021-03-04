@@ -87,4 +87,13 @@ public interface IWebClient {
      * @throws InterruptedException on interruption
      */
     Document loadArchivePreparationPage(int id, String token, String archiverKey) throws RipPandaException, InterruptedException;
+
+    /**
+     * Loads a local HTML file parsing it into a document.
+     * 
+     * @param path the path to the file to load
+     * @return the parsed HTML file, never <code>null</code>
+     * @throws RipPandaException on failure
+     */
+    Document loadDocument(Path path) throws RipPandaException;
 }

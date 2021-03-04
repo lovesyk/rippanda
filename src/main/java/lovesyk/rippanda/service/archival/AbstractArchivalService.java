@@ -330,7 +330,7 @@ public abstract class AbstractArchivalService {
     protected void removeSuccessId(int id) throws RipPandaException {
         Set<Integer> successIds = successFileIdsMap.get(successFile);
         if (successIds.remove(id)) {
-            LOGGER.debug("Removing gallery ID \"{}\" from success file...");
+            LOGGER.debug("Removing gallery ID \"{}\" from success file...", id);
 
             Path successFile = getSuccessFile();
             Path dir = successFile.getParent();

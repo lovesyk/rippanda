@@ -19,6 +19,7 @@ import com.google.gson.JsonObject;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
+import lovesyk.rippanda.service.archival.api.FilesUtils;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
 import lovesyk.rippanda.service.web.api.IWebClient;
 import lovesyk.rippanda.settings.OperationMode;
@@ -125,7 +126,7 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
         ensureLoaded(gallery);
         initDir(gallery.getDir());
-        save(file -> write(gallery.getMetadata(), file), gallery.getDir(), FILENAME);
+        FilesUtils.save(file -> write(gallery.getMetadata(), file), gallery.getDir(), FILENAME);
     }
 
     /**

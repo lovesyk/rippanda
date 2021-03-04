@@ -8,9 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
+import lovesyk.rippanda.service.archival.api.FilesUtils;
 import lovesyk.rippanda.service.web.api.IWebClient;
 import lovesyk.rippanda.settings.Settings;
 
@@ -99,7 +98,7 @@ abstract class AbstractElementArchivalService {
      * @throws RipPandaException on failure
      */
     protected void save(InputStream input, Path dir, String fileName) throws RipPandaException {
-        save(file -> write(input, file), dir, fileName);
+        FilesUtils.save(file -> write(input, file), dir, fileName);
     }
 
     /**
@@ -111,7 +110,7 @@ abstract class AbstractElementArchivalService {
      * @throws RipPandaException on failure
      */
     protected void save(String input, Path dir, String fileName) throws RipPandaException {
-        save(file -> write(input, file), dir, fileName);
+        FilesUtils.save(file -> write(input, file), dir, fileName);
     }
 
     /**
@@ -134,58 +133,6 @@ abstract class AbstractElementArchivalService {
      */
     protected void write(String input, Path file) throws IOException {
         Files.writeString(file, input);
-    }
-
-    /**
-     * Saves a file using the specified writer while making sure there is a backup
-     * available at all times.
-     * 
-     * @param fileWriter the file writer to use
-     * @param dir        the directory to save to
-     * @param fileName   the filename
-     * @throws RipPandaException on failure
-     */
-    protected void save(ArchivableElementWriter fileWriter, Path dir, String fileName) throws RipPandaException {
-        Path file = dir.resolve(fileName);
-
-        String tempFileExtension = ".tmp";
-        String tempFileName = fileName + tempFileExtension;
-        Path tempFile = dir.resolve(tempFileName);
-
-        String backupFileExtension = ".bak";
-        String backupFileName = fileName + backupFileExtension;
-        Path backupFile = dir.resolve(backupFileName);
-
-        try {
-            LOGGER.debug("Writing to temporary file \"{}\"...", tempFile);
-            fileWriter.write(tempFile);
-
-            if (Files.exists(file)) {
-                LOGGER.debug("Creating backup of existing file \"{}\" as \"{}\"...", file, backupFile);
-                Files.move(file, backupFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            LOGGER.debug("Removing temporary file extension from \"{}\" into \"{}\"...", tempFile, file);
-            Files.move(tempFile, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            try {
-                Files.deleteIfExists(tempFile);
-            } catch (IOException e1) {
-                LOGGER.error("Could not delete temporary file.");
-                throw new RipPandaException("Could not delete temporary file.", e1);
-            }
-
-            throw new RipPandaException("Could not save file.", e);
-        }
-
-        try {
-            if (Files.exists(backupFile)) {
-                LOGGER.debug("Removing backup file \"{}\"...", backupFile);
-                Files.deleteIfExists(backupFile);
-            }
-        } catch (IOException e) {
-            LOGGER.warn("Removing backup file failed. Manual clean-up required.", e);
-        }
     }
 
     /**
@@ -250,7 +197,7 @@ abstract class AbstractElementArchivalService {
             } catch (IOException e) {
                 throw new RipPandaException("Could not list directory files.", e);
             }
-            
+
             Path existingFilename = existingFilenames.get(nonCollidingFilename.toLowerCase());
             if (existingFilename != null) {
                 if (unique) {
@@ -294,18 +241,5 @@ abstract class AbstractElementArchivalService {
      */
     protected IWebClient getWebClient() {
         return webClient;
-    }
-
-    /**
-     * The file writer interface to use for saving files.
-     */
-    interface ArchivableElementWriter {
-        /**
-         * Writes to the specified file.
-         * 
-         * @param file the file to write to
-         * @throws IOException on failure
-         */
-        void write(Path file) throws IOException;
     }
 }

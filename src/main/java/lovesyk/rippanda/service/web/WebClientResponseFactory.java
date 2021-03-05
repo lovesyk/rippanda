@@ -6,7 +6,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
@@ -220,7 +222,18 @@ public class WebClientResponseFactory {
      */
     public Document parseToDocument(Path path, URI baseUri) throws RipPandaException {
         try {
-            return Jsoup.parse(path.toFile(), null, baseUri.toString());
+            // TODO remove workaround once updates have been run
+            Charset charset;
+            try (InputStream inputStream = Files.newInputStream(path)) {
+                byte[] header = inputStream.readNBytes(4);
+                if (header[0] == 0x3C && header[1] == 0x00 && header[2] == 0x21 && header[3] == 0x00) {
+                    charset = StandardCharsets.UTF_16LE;
+                    LOGGER.debug("Applying UTF-16 workaround...");
+                } else {
+                    charset = StandardCharsets.UTF_8;
+                }
+            }
+            return Jsoup.parse(path.toFile(), charset.name(), baseUri.toString());
         } catch (IOException e) {
             throw new RipPandaException("Failed parsing HTML document.", e);
         }

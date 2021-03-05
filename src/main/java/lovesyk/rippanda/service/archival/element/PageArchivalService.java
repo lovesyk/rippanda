@@ -51,7 +51,7 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
      * Checks if the page should be saved or not.
      * 
      * @return <code>true</code> if page archival is active but no page has been
-     *         found on disk, <code>false</false> otherwise.
+     *         found on disk or update mode is active, <code>false</false> otherwise.
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException {

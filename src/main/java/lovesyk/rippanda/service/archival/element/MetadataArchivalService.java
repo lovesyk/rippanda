@@ -102,8 +102,9 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     /**
      * Checks if metadata should be saved or not.
      * 
-     * @return <code>true</code> if metadata archival is active but no recent
-     *         metadata has been found on disk, <code>false</false> otherwise.
+     * @return <code>true</code> if metadata archival is active but no metadata has
+     *         been found on disk or update mode is active, <code>false</false>
+     *         otherwise.
      */
     private boolean isRequired(Gallery gallery) {
         boolean isRequired = getSettings().isMetadataActive();
@@ -117,7 +118,7 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     }
 
     /**
-     * Saves the thumbnail for the given gallery to disk.
+     * Saves the metadata for the given gallery to disk.
      * 
      * @param gallery the gallery
      * @throws RipPandaException    on failure

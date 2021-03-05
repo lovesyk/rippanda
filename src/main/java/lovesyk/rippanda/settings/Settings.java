@@ -31,6 +31,7 @@ public class Settings implements Callable<Integer> {
     private static final String DESCRIPTION_DEFAULT_FRAGMENT = " (default: ${DEFAULT-VALUE})";
     private static final String SKIP_ELEMENTS_METADATA = "metadata";
     private static final String SKIP_ELEMENTS_PAGE = "page";
+    private static final String SKIP_ELEMENTS_MPV = "mpv";
     private static final String SKIP_ELEMENTS_THUMBNAIL = "thumbnail";
     private static final String SKIP_ELEMENTS_TORRENT = "torrent";
     private static final String SKIP_ELEMENTS_ZIP = "zip";
@@ -58,7 +59,7 @@ public class Settings implements Callable<Integer> {
     private List<Path> archiveDirectories;
     @Option(names = { "-s", "--success-dir" }, description = "Directory containing success files" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
     private Path successDirectory;
-    @Option(names = { "-e", "--skip" }, description = "Elements to skip during archival process (metadata, page, thumbnail, torrent, zip)"
+    @Option(names = { "-e", "--skip" }, description = "Elements to skip during archival process (metadata, page, mpv, thumbnail, torrent, zip)"
             + DESCRIPTION_DEFAULT_FRAGMENT)
     private HashSet<String> elementsToSkip = new HashSet<String>();
     @Option(names = { "-v", "--verbose" }, description = "Specify multiple -v options to set logging verbosity. (default: specified 4 times)")
@@ -141,8 +142,8 @@ public class Settings implements Callable<Integer> {
      * @throws RipPandaException if any invalid element is encountered
      */
     private void validateElementsToSkip() throws RipPandaException {
-        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_THUMBNAIL, SKIP_ELEMENTS_TORRENT,
-                SKIP_ELEMENTS_ZIP);
+        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_MPV, SKIP_ELEMENTS_THUMBNAIL,
+                SKIP_ELEMENTS_TORRENT, SKIP_ELEMENTS_ZIP);
         for (String element : elementsToSkip) {
             if (!validElements.contains(element)) {
                 throw new RipPandaException("Invalid elements to be skipped.");
@@ -165,6 +166,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Success directory: {}", getSuccessDirectory());
         LOGGER.info("Metadata active: {}", isMetadataActive());
         LOGGER.info("Page active: {}", isPageActive());
+        LOGGER.info("MPV active: {}", isMpvActive());
         LOGGER.info("Thumbnail active: {}", isThumbnailActive());
         LOGGER.info("Torrent active: {}", isTorrentActive());
         LOGGER.info("ZIP active: {}", isZipActive());
@@ -286,6 +288,15 @@ public class Settings implements Callable<Integer> {
      */
     public boolean isPageActive() {
         return !elementsToSkip.contains(SKIP_ELEMENTS_PAGE);
+    }
+
+    /**
+     * Whether MPV page archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isMpvActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_MPV);
     }
 
     /**

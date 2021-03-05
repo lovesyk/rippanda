@@ -62,6 +62,19 @@ public interface IWebClient {
     Document loadPage(int id, String token) throws RipPandaException, InterruptedException;
 
     /**
+     * Loads the HTML for a gallery MPV page.
+     * <p>
+     * Delays specified by application settings will be honored.
+     * 
+     * @param id    the gallery ID
+     * @param token the gallery token
+     * @return the parsed HTML response, never <code>null</code>
+     * @throws RipPandaException    on failure
+     * @throws InterruptedException on interruption
+     */
+    Document loadMpvPage(int id, String token) throws RipPandaException, InterruptedException;
+
+    /**
      * Loads the HTML for torrent page of a gallery.
      * <p>
      * Delays specified by application settings will be honored.

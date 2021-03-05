@@ -148,6 +148,28 @@ public class WebClientRequestFactory {
     }
 
     /**
+     * Creates a request to load a gallery MPV page.
+     * 
+     * @param id    the gallery ID
+     * @param token the gallery token
+     * @return the HTTP request, never <code>null</code>
+     * @throws RipPandaException on failure
+     */
+    public HttpGet createLoadMpvPageRequest(int id, String token) throws RipPandaException {
+        URIBuilder builder = new URIBuilder(getBaseUri()).setPathSegments("mpv", String.valueOf(id), token);
+        URI uri;
+        try {
+            uri = builder.build();
+        } catch (URISyntaxException e) {
+            throw new RipPandaException("Invalid page URL.", e);
+        }
+
+        HttpGet request = new HttpGet(uri);
+
+        return request;
+    }
+
+    /**
      * Creates a request to load the torrent page for a specific gallery.
      * 
      * @param id    the gallery ID

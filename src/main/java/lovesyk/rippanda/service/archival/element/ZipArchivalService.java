@@ -2,7 +2,8 @@ package lovesyk.rippanda.service.archival.element;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.Duration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,8 +25,8 @@ import lovesyk.rippanda.settings.Settings;
  */
 public class ZipArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(ZipArchivalService.class);
-    private static final Duration ARCHIVE_PREPARATION_BASE_DELAY = Duration.ofSeconds(1);
     private static final int ARCHIVE_PREPARATION_RETRIES = 10;
+    private static final Pattern CONTINUE_SCRIPT_TIMEOUT_PATTERN = Pattern.compile("setTimeout\\(.*?, (\\d+)\\)");
 
     private MetadataArchivalService apiArchivingService;
 
@@ -131,30 +132,46 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      */
     private String loadArchiveUrl(int id, String token, String archiverKey) throws RipPandaException, InterruptedException {
         LOGGER.debug("Generating ZIP URL...");
-        Element continueLink = null;
-        for (int i = 0; i < ARCHIVE_PREPARATION_RETRIES && continueLink == null; ++i) {
-            if (i > 0 && continueLink == null) {
-                Duration delay = ARCHIVE_PREPARATION_BASE_DELAY.multipliedBy(i * i);
-                LOGGER.debug(String.format("Archive not ready yet. Waiting for {}...", delay));
-                Thread.sleep(delay.toMillis());
+        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(id, token, archiverKey);
+
+        for (int i = 0;; ++i) {
+            Element continueUrlElement = archivePreparationPage.selectFirst("#continue a");
+            if (continueUrlElement == null) {
+                Element archiveUrlElement = archivePreparationPage.selectFirst("#db a");
+                if (archiveUrlElement == null) {
+                    throw new RipPandaException("Could not find archive URL element.");
+                }
+                return archiveUrlElement.attr("abs:href");
             }
 
-            Document archivePreparationPage = getWebClient().loadArchivePreparationPage(id, token, archiverKey);
-            Element continueElement = archivePreparationPage.selectFirst("#continue");
-            if (continueElement == null) {
+            if (i >= ARCHIVE_PREPARATION_RETRIES) {
+                break;
+            }
+
+            Element scriptElement = archivePreparationPage.selectFirst("script");
+            if (scriptElement == null) {
                 throw new RipPandaException("Unexpected HTML.");
             }
+            Matcher timeoutMatcher = CONTINUE_SCRIPT_TIMEOUT_PATTERN.matcher(scriptElement.html());
+            if (!timeoutMatcher.find()) {
+                throw new RipPandaException("Unexpected HTML.");
+            }
+            String timeoutString = timeoutMatcher.group(1);
+            long timeout;
+            try {
+                timeout = Long.parseLong(timeoutString);
+            } catch (NumberFormatException e) {
+                throw new RipPandaException("Could not parse timeout.", e);
+            }
 
-            continueLink = continueElement.selectFirst("a");
+            LOGGER.debug(String.format("Waiting for {} milliseconds as instructed by archiver...", timeout));
+            Thread.sleep(timeout);
+
+            String continueUrl = continueUrlElement.attr("abs:href");
+            archivePreparationPage = getWebClient().loadDocument(continueUrl);
         }
 
-        if (continueLink == null) {
-            throw new RipPandaException("Could not retrieve prepared file on download server.");
-        }
-
-        String archiveUrl = continueLink.attr("href") + "?start=1";
-
-        return archiveUrl;
+        throw new RipPandaException("Could not retrieve prepared file on download server.");
     }
 
     /**

@@ -18,7 +18,7 @@ public class CookiesConsumer implements IParameterConsumer {
      */
     @Override
     public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
 
         String value = args.pop();
         for (String cookie : value.split(";")) {
@@ -27,10 +27,10 @@ public class CookiesConsumer implements IParameterConsumer {
                 throw new TypeConversionException(String.format("\"%s\" is not a valid cookie.", cookie));
             }
 
-            result.put(cookieSplit[0].trim(), cookieSplit[1].trim());
+            map.put(cookieSplit[0].trim(), cookieSplit[1].trim());
         }
 
+        CookiesWrapper result = new CookiesWrapper(map);
         argSpec.setValue(result);
     }
-
 }

@@ -17,5 +17,10 @@ public enum OperationMode {
     /**
      * Cleanup mode results in outdated galleries being removed.
      */
-    CLEANUP
+    CLEANUP;
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }

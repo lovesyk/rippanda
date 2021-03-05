@@ -20,6 +20,8 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import jakarta.inject.Singleton;
 import lovesyk.rippanda.exception.RipPandaException;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -27,8 +29,8 @@ import picocli.CommandLine.Parameters;
  * The application settings that represent the command line arguments.
  */
 @Singleton
+@Command(name = "rippanda", sortOptions = false)
 public class Settings implements Callable<Integer> {
-    private static final String DESCRIPTION_DEFAULT_FRAGMENT = " (default: ${DEFAULT-VALUE})";
     private static final String SKIP_ELEMENTS_METADATA = "metadata";
     private static final String SKIP_ELEMENTS_PAGE = "page";
     private static final String SKIP_ELEMENTS_MPV = "mpv";
@@ -38,31 +40,34 @@ public class Settings implements Callable<Integer> {
 
     private static final Logger LOGGER = LogManager.getLogger(Settings.class);
 
-    @Parameters(index = "0", description = "Operation mode: ${COMPLETION-CANDIDATES}" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "DOWNLOAD")
+    @Parameters(paramLabel = "mode", description = "Operation mode: ${COMPLETION-CANDIDATES}", defaultValue = "download", showDefaultValue = Visibility.ALWAYS)
     private OperationMode operationMode;
 
     @Option(names = { "-c",
-            "--cookies" }, description = "Log-in / perk cookies in key=value pairs separated by ;", required = true, parameterConsumer = CookiesConsumer.class)
-    private Map<String, String> cookies;
+            "--cookies" }, paramLabel = "cookies", description = "Log-in / perk cookies in key=value pairs separated by ;", required = true, parameterConsumer = CookiesConsumer.class)
+    private CookiesWrapper cookies;
     @Option(names = { "-p",
-            "--proxy" }, description = "SOCKS5 proxy to use for network requests and DNS resolution.", converter = InetSocketAddressConverter.class)
+            "--proxy" }, paramLabel = "host:port", description = "SOCKS5 proxy to use for network requests and DNS resolution.", converter = InetSocketAddressConverter.class)
     private InetSocketAddress proxy;
-    @Option(names = { "-u", "--url" }, description = "Base URL to use for web requests or a more specific search URL if in download mode", required = true)
+    @Option(names = { "-u",
+            "--url" }, paramLabel = "url", description = "Base URL to use for web requests or a more specific search URL if in download mode", required = true)
     private URI uri;
-    @Option(names = { "-d", "--delay" }, description = "Minimum delay between web request in ISO-8601 time format"
-            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "5S", converter = TimeConverter.class)
+    @Option(names = { "-d",
+            "--delay" }, paramLabel = "time", description = "Minimum delay between web request in ISO-8601 time format", defaultValue = "5S", showDefaultValue = Visibility.ALWAYS, converter = TimeConverter.class)
     private Duration requestDelay;
-    @Option(names = { "-i", "--update-interval" }, description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format"
-            + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = "30D", converter = PeriodConverter.class)
+    @Option(names = { "-i",
+            "--update-interval" }, paramLabel = "period", description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format", defaultValue = "30D", showDefaultValue = Visibility.ALWAYS, converter = PeriodConverter.class)
     private Duration updateInterval;
-    @Option(names = { "-a", "--archive-dir" }, description = "Directories containing archived galleries" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
+    @Option(names = { "-a",
+            "--archive-dir" }, paramLabel = "path", description = "Directories containing archived galleries (first occurence denotes writable primary path)", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private List<Path> archiveDirectories;
-    @Option(names = { "-s", "--success-dir" }, description = "Directory containing success files" + DESCRIPTION_DEFAULT_FRAGMENT, defaultValue = ".")
+    @Option(names = { "-s",
+            "--success-dir" }, paramLabel = "path", description = "Directory containing success files", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private Path successDirectory;
-    @Option(names = { "-e", "--skip" }, description = "Elements to skip during archival process (metadata, page, mpv, thumbnail, torrent, zip)"
-            + DESCRIPTION_DEFAULT_FRAGMENT)
+    @Option(names = { "-e",
+            "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, mpv, thumbnail, torrent, zip)")
     private HashSet<String> elementsToSkip = new HashSet<String>();
-    @Option(names = { "-v", "--verbose" }, description = "Specify multiple -v options to set logging verbosity. (default: specified 4 times)")
+    @Option(names = { "-v", "--verbose" }, description = "Specify up to 7 times to override logging verbosity (4 times by default)")
     private boolean[] verbosity = new boolean[] { true, true, true, true };
 
     // not configurable for now
@@ -80,7 +85,7 @@ public class Settings implements Callable<Integer> {
     public void init(String[] args) throws RipPandaException {
         LOGGER.debug("Initializing settings...");
 
-        int exitCode = new CommandLine(this).setCaseInsensitiveEnumValuesAllowed(true).execute(args);
+        int exitCode = new CommandLine(this).setUsageHelpLongOptionsMaxWidth(24).setUsageHelpWidth(160).setCaseInsensitiveEnumValuesAllowed(true).execute(args);
         if (exitCode != 0) {
             throw new RipPandaException("Invalid command line arguments.");
         }
@@ -188,7 +193,7 @@ public class Settings implements Callable<Integer> {
      * @return the cookies
      */
     public Map<String, String> getCookies() {
-        return cookies;
+        return cookies.getCookies();
     }
 
     /**

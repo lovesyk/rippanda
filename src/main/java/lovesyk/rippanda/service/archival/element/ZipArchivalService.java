@@ -164,7 +164,7 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
                 throw new RipPandaException("Could not parse timeout.", e);
             }
 
-            LOGGER.debug(String.format("Waiting for {} milliseconds as instructed by archiver...", timeout));
+            LOGGER.debug("Waiting for {}ms as instructed by archiver...", timeout);
             Thread.sleep(timeout);
 
             String continueUrl = continueUrlElement.attr("abs:href");

@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -35,7 +33,6 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
     private static final Logger LOGGER = LogManager.getLogger(CleanupModeService.class);
 
     private static final String PAGE_FILENAME = "page.html";
-    private static final Pattern GALLERY_URL_ID_PATTERN = Pattern.compile("/g/(.*?)/");
 
     private IWebClient webClient;
 
@@ -163,7 +160,7 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
         if (reportElement == null) {
             throw new RipPandaException("Could not find report element.");
         }
-        Integer id = parseGalleryUrlId(reportElement);
+        Integer id = parseGalleryUrlIdToken(reportElement).getLeft();
 
         Set<Path> writableDirectories = galleryIdToDirectoryMap.computeIfAbsent(id, directories -> new HashSet<Path>());
         if (directory.startsWith(getSettings().getWritableArchiveDirectory())) {
@@ -173,29 +170,6 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
             LOGGER.debug("Memorizing gallery ID {} with the directory as not removable.", id);
         }
 
-        return id;
-    }
-
-    /**
-     * Parses the gallery ID from its URL.
-     * 
-     * @param linkElement a link element containing the gallery URL, not
-     *                    <code>null</null>
-     * @return the gallery ID, never <code>null</null>
-     * @throws RipPandaException on failure
-     */
-    private Integer parseGalleryUrlId(Element linkElement) throws RipPandaException {
-        Matcher matcher = GALLERY_URL_ID_PATTERN.matcher(linkElement.attr("href"));
-        if (!matcher.find()) {
-            throw new RipPandaException("Could not find gallery ID in URL.");
-        }
-
-        Integer id;
-        try {
-            id = Integer.valueOf(matcher.group(1));
-        } catch (NumberFormatException e) {
-            throw new RipPandaException("Could not parse gallery ID.", e);
-        }
         return id;
     }
 
@@ -240,7 +214,7 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      */
     private void memorizeChildIds(Integer id, Map<Integer, Set<Integer>> childToParentIdMap, Document page) throws RipPandaException {
         for (Element childElement : page.select("#gnd > a")) {
-            int childId = parseGalleryUrlId(childElement);
+            int childId = parseGalleryUrlIdToken(childElement).getLeft();
 
             LOGGER.debug("Memorizing child gallery ID {}...", childId);
             childToParentIdMap.computeIfAbsent(childId, ids -> new HashSet<Integer>()).add(id);

@@ -5,12 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.inject.Instance;
@@ -19,6 +21,7 @@ import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.service.archival.api.IArchivalService;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
+import lovesyk.rippanda.service.web.api.IWebClient;
 import lovesyk.rippanda.settings.OperationMode;
 import lovesyk.rippanda.settings.Settings;
 
@@ -30,16 +33,20 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
     private static final String PAGE_FILENAME = "page.html";
     private static final Pattern GALLERY_URL_PATTERN = Pattern.compile("<a href=\".*?/g/(\\d+)/([0-9a-f]{10})/\\?report=select\">Report Gallery</a>");
 
+    private IWebClient webClient;
+
     /**
      * Constructs a new search result archival service instance.
      * 
      * @param settings                the application settings
+     * @param webClient               the web client
      * @param elementArchivalServices the archival services which should be invoked
      *                                for archiving elements
      */
     @Inject
-    public UpdateModeArchivalService(Settings settings, Instance<IElementArchivalService> elementArchivalServices) {
+    public UpdateModeArchivalService(Settings settings, IWebClient webClient, Instance<IElementArchivalService> elementArchivalServices) {
         super(settings, elementArchivalServices);
+        this.webClient = webClient;
     }
 
     /**
@@ -190,23 +197,21 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         Path pageFile = directory.resolve(PAGE_FILENAME);
         if (Files.exists(pageFile)) {
             if (isRequired(directory)) {
-                try (Stream<String> stream = Files.lines(pageFile)) {
-                    for (String line : (Iterable<String>) stream::iterator) {
-                        Matcher matcher = GALLERY_URL_PATTERN.matcher(line);
-                        if (matcher.find()) {
-                            int id;
-                            try {
-                                id = Integer.valueOf(matcher.group(1));
-                            } catch (NumberFormatException e) {
-                                LOGGER.warn("Failed parsing gallery ID, this line will be skipped.", e);
-                                continue;
-                            }
-                            String token = matcher.group(2);
-                            gallery = new Gallery(id, token, pageFile.getParent());
-                        }
-                    }
-                } catch (IOException e) {
+                Document page = null;
+                try {
+                    page = getWebClient().loadDocument(pageFile);
+                } catch (RipPandaException e) {
                     LOGGER.warn("Failed reading file, it will be skipped.", e);
+                }
+
+                if (page != null) {
+                    Element reportElement = page.selectFirst("#gd5 > .g3 > a");
+                    if (reportElement == null) {
+                        throw new RipPandaException("Could not find report element.");
+                    }
+                    Pair<Integer, String> idTokenPair = parseGalleryUrlIdToken(reportElement);
+
+                    gallery = new Gallery(idTokenPair.getLeft(), idTokenPair.getRight(), pageFile.getParent());
                 }
             } else {
                 LOGGER.debug("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", directory);
@@ -216,5 +221,14 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         }
 
         return gallery;
+    }
+
+    /**
+     * Gets the network web client.
+     * 
+     * @return the web client
+     */
+    protected IWebClient getWebClient() {
+        return webClient;
     }
 }

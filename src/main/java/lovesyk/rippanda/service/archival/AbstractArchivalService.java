@@ -11,11 +11,16 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Element;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.inject.Instance;
@@ -34,6 +39,7 @@ public abstract class AbstractArchivalService {
     private static final String SUCCESS_FILENAME_FORMAT = SUCCESS_FILENAME_PREFIX + "%s" + SUCCESS_FILENAME_SUFFIX;
     private static final String SUCCESS_TEMP_FILENAME_FORMAT = String.format(SUCCESS_FILENAME_FORMAT, "%s-temp");
     private static final String LINE_ENDING = StringUtils.CR + StringUtils.LF;
+    private static final Pattern GALLERY_URL_ID_TOKEN_PATTERN = Pattern.compile("/g/(.+?)/(.+?)(/|\")");
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractArchivalService.class);
 
@@ -351,5 +357,30 @@ public abstract class AbstractArchivalService {
                 writer.write(successId + LINE_ENDING);
             }
         }
+    }
+
+    /**
+     * Parses the gallery ID and token from its URL.
+     * 
+     * @param linkElement a link element containing the gallery URL, not
+     *                    <code>null</null>
+     * @return a pair of the gallery ID and token, never <code>null</null>
+     * @throws RipPandaException on failure
+     */
+    protected Pair<Integer, String> parseGalleryUrlIdToken(Element linkElement) throws RipPandaException {
+        Matcher matcher = GALLERY_URL_ID_TOKEN_PATTERN.matcher(linkElement.attr("href"));
+        if (!matcher.find()) {
+            throw new RipPandaException("Could not find gallery ID or token in URL.");
+        }
+
+        Integer id;
+        try {
+            id = Integer.valueOf(matcher.group(1));
+        } catch (NumberFormatException e) {
+            throw new RipPandaException("Could not parse gallery ID.", e);
+        }
+        String token = matcher.group(2);
+
+        return new ImmutablePair<Integer, String>(id, token);
     }
 }

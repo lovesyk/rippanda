@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,7 +30,6 @@ import lovesyk.rippanda.settings.Settings;
 public class UpdateModeArchivalService extends AbstractArchivalService implements IArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(UpdateModeArchivalService.class);
     private static final String PAGE_FILENAME = "page.html";
-    private static final Pattern GALLERY_URL_PATTERN = Pattern.compile("<a href=\".*?/g/(\\d+)/([0-9a-f]{10})/\\?report=select\">Report Gallery</a>");
 
     private IWebClient webClient;
 

@@ -37,7 +37,7 @@ Currently the following elements will be downloaded and updated:
 - all torrent files associated with the gallery or previous versions
 
 The update logic behaves as following:
-1. A gallery will not be updated if the directory it resides in has been changed within the update inverval.
+1. A gallery will not be updated if the directory it resides in has been changed within the update interval.
 2. API metadata and the web page will always be updated if the whole gallery is not to be excluded by the above rule.
 3. Torrent files will be updated / removed if they do not match the API files by comparing their file size and timestamps.
 4. ZIP file, thumbnail and MPV page will only be updated if their files are missing.

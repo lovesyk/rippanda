@@ -154,7 +154,7 @@ public class WebClientResponseFactory {
             filename = FilenameUtils.getName(responseUri.getPath());
         }
 
-        LOGGER.trace("Using filename \"{}\".", filename);
+        LOGGER.trace("Found filename \"{}\".", filename);
         return filename;
     }
 

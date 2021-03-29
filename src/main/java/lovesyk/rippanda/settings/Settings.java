@@ -55,16 +55,16 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-d",
             "--delay" }, paramLabel = "time", description = "Minimum delay between web request in ISO-8601 time format", defaultValue = "5S", showDefaultValue = Visibility.ALWAYS, converter = TimeConverter.class)
     private Duration requestDelay;
-    @Option(names = { "-i",
+    @Option(names = { "-ui",
             "--update-interval" }, paramLabel = "period", description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format", defaultValue = "30D", showDefaultValue = Visibility.ALWAYS, converter = PeriodConverter.class)
     private Duration updateInterval;
-    @Option(names = { "-a",
+    @Option(names = { "-ad",
             "--archive-dir" }, paramLabel = "path", description = "Directories containing archived galleries (first occurence denotes writable primary path)", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private List<Path> archiveDirectories;
-    @Option(names = { "-s",
+    @Option(names = { "-sd",
             "--success-dir" }, paramLabel = "path", description = "Directory containing success files", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private Path successDirectory;
-    @Option(names = { "-e",
+    @Option(names = { "-se",
             "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)")
     private HashSet<String> elementsToSkip = new HashSet<String>();
     @Option(names = { "-v", "--verbose" }, description = "Specify up to 7 times to override logging verbosity (4 times by default)")

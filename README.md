@@ -17,11 +17,11 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=period] [-p=host:port] [-s=path] -
                                    Default: .
   -s, --success-dir=path         Directory containing success files
                                    Default: .
-  -e, --skip=element             Specify multiple times to skip elements during archival process. (metadata, page, mpv, thumbnail, torrent, zip)
+  -e, --skip=element             Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)
   -v, --verbose                  Specify up to 7 times to override logging verbosity (4 times by default)
 
 Example download: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 4S download
-Example update: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org" --skip torrent --skip mpv --update-interval 10D update
+Example update: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org" --skip torrent --skip imagelist --update-interval 10D update
 Example cleanup: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "/home/me/Downloads/success" --archive-dir "/home/me/Downloads/archive" --archive-dir "/home/someoneElse/Downloads/archive" --url "https://somepandasite.org" -vvvvv update
 ```
 
@@ -32,7 +32,7 @@ Currently the following elements will be downloaded and updated:
 - untouched ZIP file containing all gallery images
 - API metadata in JSON format
 - initial page when opening the gallery containing some data like user comments not available through the API
-- the MPV (multi-page viewer) page containing individual image hashes and file sizes (should be disabled if user has no access to MPV)
+- the image list of the multi-page viewer page containing individual image hashes and file sizes in JSON format (should be disabled if user has no access to MPV)
 - a high-quality thumbnail
 - all torrent files associated with the gallery or previous versions
 

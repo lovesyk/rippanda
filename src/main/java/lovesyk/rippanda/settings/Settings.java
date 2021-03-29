@@ -33,7 +33,7 @@ import picocli.CommandLine.Parameters;
 public class Settings implements Callable<Integer> {
     private static final String SKIP_ELEMENTS_METADATA = "metadata";
     private static final String SKIP_ELEMENTS_PAGE = "page";
-    private static final String SKIP_ELEMENTS_MPV = "mpv";
+    private static final String SKIP_ELEMENTS_IMAGELIST = "imagelist";
     private static final String SKIP_ELEMENTS_THUMBNAIL = "thumbnail";
     private static final String SKIP_ELEMENTS_TORRENT = "torrent";
     private static final String SKIP_ELEMENTS_ZIP = "zip";
@@ -65,7 +65,7 @@ public class Settings implements Callable<Integer> {
             "--success-dir" }, paramLabel = "path", description = "Directory containing success files", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private Path successDirectory;
     @Option(names = { "-e",
-            "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, mpv, thumbnail, torrent, zip)")
+            "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)")
     private HashSet<String> elementsToSkip = new HashSet<String>();
     @Option(names = { "-v", "--verbose" }, description = "Specify up to 7 times to override logging verbosity (4 times by default)")
     private boolean[] verbosity = new boolean[] { true, true, true, true };
@@ -147,7 +147,7 @@ public class Settings implements Callable<Integer> {
      * @throws RipPandaException if any invalid element is encountered
      */
     private void validateElementsToSkip() throws RipPandaException {
-        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_MPV, SKIP_ELEMENTS_THUMBNAIL,
+        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_IMAGELIST, SKIP_ELEMENTS_THUMBNAIL,
                 SKIP_ELEMENTS_TORRENT, SKIP_ELEMENTS_ZIP);
         for (String element : elementsToSkip) {
             if (!validElements.contains(element)) {
@@ -171,7 +171,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Success directory: {}", getSuccessDirectory());
         LOGGER.info("Metadata active: {}", isMetadataActive());
         LOGGER.info("Page active: {}", isPageActive());
-        LOGGER.info("MPV active: {}", isMpvActive());
+        LOGGER.info("Image list active: {}", isImageListActive());
         LOGGER.info("Thumbnail active: {}", isThumbnailActive());
         LOGGER.info("Torrent active: {}", isTorrentActive());
         LOGGER.info("ZIP active: {}", isZipActive());
@@ -296,12 +296,12 @@ public class Settings implements Callable<Integer> {
     }
 
     /**
-     * Whether MPV page archival should be done.
+     * Whether image list archival should be done.
      * 
      * @return true if it should be done, false otherwise
      */
-    public boolean isMpvActive() {
-        return !elementsToSkip.contains(SKIP_ELEMENTS_MPV);
+    public boolean isImageListActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_IMAGELIST);
     }
 
     /**

@@ -1,5 +1,6 @@
 package lovesyk.rippanda.service.archival.element;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -14,6 +15,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.service.archival.api.FilesUtils;
@@ -25,6 +30,7 @@ import lovesyk.rippanda.settings.Settings;
  */
 abstract class AbstractElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(AbstractElementArchivalService.class);
+    protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     /**
      * 259 characters according to Windows MAX_PATH.
@@ -133,6 +139,19 @@ abstract class AbstractElementArchivalService {
      */
     protected void write(String input, Path file) throws IOException {
         Files.writeString(file, input);
+    }
+
+    /**
+     * Writes a JSON object to file.
+     * 
+     * @param json the JSON
+     * @param file the file to write to
+     * @throws IOException on failure
+     */
+    protected void write(JsonElement json, Path file) throws IOException {
+        try (BufferedWriter writer = Files.newBufferedWriter(file)) {
+            GSON.toJson(json, writer);
+        }
     }
 
     /**

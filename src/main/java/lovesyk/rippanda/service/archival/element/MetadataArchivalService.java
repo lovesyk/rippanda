@@ -1,7 +1,5 @@
 package lovesyk.rippanda.service.archival.element;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -10,8 +8,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -30,7 +26,6 @@ import lovesyk.rippanda.settings.Settings;
  */
 public class MetadataArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(MetadataArchivalService.class);
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILENAME = "api-metadata.json";
 
     /**
@@ -128,18 +123,5 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
         ensureLoaded(gallery);
         initDir(gallery.getDir());
         FilesUtils.save(file -> write(gallery.getMetadata(), file), gallery.getDir(), FILENAME);
-    }
-
-    /**
-     * Writes a JSON object to file.
-     * 
-     * @param json the JSON
-     * @param file the file to write to
-     * @throws IOException on failure
-     */
-    private void write(JsonObject json, Path file) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(file)) {
-            GSON.toJson(json, writer);
-        }
     }
 }

@@ -320,7 +320,7 @@ public class WebClient implements IWebClient {
                 }
             }
         } catch (IOException e) {
-            throw new RipPandaException("Failed executing network request.", e);
+            throw new RipPandaException("Failed executing network request for URL \"" + url + "\".", e);
         }
     }
 
@@ -342,7 +342,7 @@ public class WebClient implements IWebClient {
                 }
             }
         } catch (IOException e) {
-            throw new RipPandaException("Failed executing network request.", e);
+            throw new RipPandaException("Failed executing network request for URL \"" + url + "\".", e);
         }
     }
 

@@ -108,20 +108,7 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
             }
 
             for (Gallery gallery : galleries) {
-                for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
-                    try {
-                        process(gallery);
-                        break;
-                    } catch (RipPandaException e) {
-                        LOGGER.warn("Archiving gallery failed, {} tries remain.", remainingTries, e);
-                        if (remainingTries > 0) {
-                            LOGGER.warn("Waiting 10 seconds before retrying...");
-                            Thread.sleep(1000 * 10);
-                        } else {
-                            throw e;
-                        }
-                    }
-                }
+                process(gallery);
             }
 
             pageUrl = parseNextPageUrl(searchResultPage);
@@ -160,7 +147,20 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
         } else {
             addTempSuccessId(gallery.getId());
             for (IElementArchivalService archivingService : getArchivingServiceList()) {
-                archivingService.process(gallery);
+                for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+                    try {
+                        archivingService.process(gallery);
+                        break;
+                    } catch (RipPandaException e) {
+                        LOGGER.warn("Archiving element failed, {} tries remain.", remainingTries, e);
+                        if (remainingTries > 0) {
+                            LOGGER.warn("Waiting 10 seconds before retrying...");
+                            Thread.sleep(1000 * 10);
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
             }
             addSuccessId(gallery.getId());
 

@@ -81,6 +81,11 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
         }
 
         getWebClient().downloadFile(url, (downloadableThumbnail) -> {
+            String mimeType = downloadableThumbnail.getMimeType();
+            if (!"image/jpeg".equals(mimeType)) {
+                throw new RipPandaException("Unexpected mime type \"" + mimeType + "\".");
+            }
+
             initDir(gallery.getDir());
             save(downloadableThumbnail.getStream(), gallery.getDir(), FILENAME);
 

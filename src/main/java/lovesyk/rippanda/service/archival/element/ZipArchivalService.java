@@ -94,6 +94,11 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
         String archiveUrl = loadArchiveUrl(gallery.getId(), gallery.getToken(), archiverKey);
 
         getWebClient().downloadFile(archiveUrl, (downloadableArchive) -> {
+            String mimeType = downloadableArchive.getMimeType();
+            if (!"application/zip".equals(mimeType)) {
+                throw new RipPandaException("Unexpected mime type \"" + mimeType + "\".");
+            }
+
             initDir(gallery.getDir());
             String sanitizedFileName = sanitizeFileName(gallery.getDir(), downloadableArchive.getName(), true);
             save(downloadableArchive.getStream(), gallery.getDir(), sanitizedFileName);

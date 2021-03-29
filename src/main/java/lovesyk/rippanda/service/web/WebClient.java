@@ -106,15 +106,23 @@ public class WebClient implements IWebClient {
                 .build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
+        RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create();
+        DnsResolver dnsResolver;
         if (getSettings().getProxy() != null) {
             // https://stackoverflow.com/a/25203021
-            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("http", new ProxiedPlainConnectionSocketFactory())
-                    .register("https", new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
-            DnsResolver dnsResolver = new FakeDnsResolver();
-            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
-            httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
+            registryBuilder.register("http", new ProxiedPlainConnectionSocketFactory());
+            registryBuilder.register("https", new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault()));
+            dnsResolver = new FakeDnsResolver();
+        } else {
+            // default DNS resolver will be set by Apache
+            dnsResolver = null;
         }
+
+        Registry<ConnectionSocketFactory> registry = registryBuilder.build();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
+        connectionManager.setValidateAfterInactivity(Timeout.ofSeconds(2));
+
+        httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
 
         this.httpClientBuilder = httpClientBuilder;
     }

@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,6 +48,10 @@ abstract class AbstractElementArchivalService {
      * suffixes of (2) up to (99).
      */
     private static final int MAX_FILENAME_LENGTH = MAX_FILENAME_LENGTH_UNIQUE - 5;
+    /**
+     * The regular expression to apply for cleanup of filenames during sanitization.
+     */
+    private static final String FILENAME_CLEANUP_PATTERN = "[\u0000-\u001f\u007f]";
 
     private Settings settings;
     private IWebClient webClient;
@@ -176,6 +181,7 @@ abstract class AbstractElementArchivalService {
 
             sanitizedFilename = sanitizedFilename.replace(key, value);
         }
+        sanitizedFilename = sanitizedFilename.replaceAll(FILENAME_CLEANUP_PATTERN, StringUtils.EMPTY);
 
         if (LOGGER.isDebugEnabled() && !sanitizedFilename.equals(filename)) {
             LOGGER.debug("Removed potentially unsafe characters resulting in \"{}\".", sanitizedFilename);

@@ -10,7 +10,7 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=period] [-p=host:port] [-s=path] -
   -p, --proxy=host:port          SOCKS5 proxy to use for network requests and DNS resolution.
   -u, --url=url                  Base URL to use for web requests or a more specific search URL if in download mode
   -d, --delay=time               Minimum delay between web request in ISO-8601 time format
-                                   Default: 5S
+                                   Default: 10S
   -i, --update-interval=period   Minimum interval when deciding whether to update a gallery in ISO-8601 period format
                                    Default: 30D
   -a, --archive-dir=path         Directories containing archived galleries (first occurence denotes writable primary path)
@@ -20,7 +20,7 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=period] [-p=host:port] [-s=path] -
   -e, --skip=element             Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)
   -v, --verbose                  Specify up to 7 times to override logging verbosity (4 times by default)
 
-Example download: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 4S download
+Example download: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 5S download
 Example update: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org" --skip torrent --skip imagelist --update-interval 10D update
 Example cleanup: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "/home/me/Downloads/success" --archive-dir "/home/me/Downloads/archive" --archive-dir "/home/someoneElse/Downloads/archive" --url "https://somepandasite.org" -vvvvv update
 ```
@@ -60,7 +60,7 @@ There are two purposes to those files:
 - This tremendously increases the startup speed of the tool since there is no need to read a possibly huge directory of galleries to find out which can safely be skipped.
 
 ## Delay
-Make sure to set the delay accordingly to your needs. The default delay of 5 seconds should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
+Make sure to set the delay accordingly to your needs. The default delay of 10 seconds should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
 
 ## Building with Maven
 ```

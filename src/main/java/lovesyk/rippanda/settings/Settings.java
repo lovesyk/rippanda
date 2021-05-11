@@ -53,7 +53,7 @@ public class Settings implements Callable<Integer> {
             "--url" }, paramLabel = "url", description = "Base URL to use for web requests or a more specific search URL if in download mode", required = true)
     private URI uri;
     @Option(names = { "-d",
-            "--delay" }, paramLabel = "time", description = "Minimum delay between web request in ISO-8601 time format", defaultValue = "5S", showDefaultValue = Visibility.ALWAYS, converter = TimeConverter.class)
+            "--delay" }, paramLabel = "time", description = "Minimum delay between web request in ISO-8601 time format", defaultValue = "10S", showDefaultValue = Visibility.ALWAYS, converter = TimeConverter.class)
     private Duration requestDelay;
     @Option(names = { "-ui",
             "--update-interval" }, paramLabel = "period", description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format", defaultValue = "30D", showDefaultValue = Visibility.ALWAYS, converter = PeriodConverter.class)

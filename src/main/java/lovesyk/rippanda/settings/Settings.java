@@ -56,8 +56,8 @@ public class Settings implements Callable<Integer> {
             "--delay" }, paramLabel = "time", description = "Minimum delay between web request in ISO-8601 time format", defaultValue = "10S", showDefaultValue = Visibility.ALWAYS, converter = TimeConverter.class)
     private Duration requestDelay;
     @Option(names = { "-i",
-            "--update-interval" }, paramLabel = "period", description = "Minimum interval when deciding whether to update a gallery in ISO-8601 period format", defaultValue = "30D", showDefaultValue = Visibility.ALWAYS, converter = PeriodConverter.class)
-    private Duration updateInterval;
+            "--update-interval" }, paramLabel = "interval", description = "Minimum (created right now) and optionally maximum (created a year ago) interval when deciding whether to update a gallery in ISO-8601 period format", defaultValue = "7D-90D", showDefaultValue = Visibility.ALWAYS, converter = UpdateIntervalConverter.class)
+    private UpdateInterval updateInterval;
     @Option(names = { "-a",
             "--archive-dir" }, paramLabel = "path", description = "Directories containing archived galleries (first occurence denotes writable primary path)", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private List<Path> archiveDirectories;
@@ -85,7 +85,7 @@ public class Settings implements Callable<Integer> {
     public void init(String[] args) throws RipPandaException {
         LOGGER.debug("Initializing settings...");
 
-        int exitCode = new CommandLine(this).setUsageHelpLongOptionsMaxWidth(24).setUsageHelpWidth(160).setCaseInsensitiveEnumValuesAllowed(true).execute(args);
+        int exitCode = new CommandLine(this).setUsageHelpLongOptionsMaxWidth(26).setUsageHelpWidth(160).setCaseInsensitiveEnumValuesAllowed(true).execute(args);
         if (exitCode != 0) {
             throw new RipPandaException("Invalid command line arguments.");
         }
@@ -228,7 +228,7 @@ public class Settings implements Callable<Integer> {
      * 
      * @return the update interval
      */
-    public Duration getUpdateInterval() {
+    public UpdateInterval getUpdateInterval() {
         return updateInterval;
     }
 

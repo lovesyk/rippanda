@@ -3,8 +3,10 @@ package lovesyk.rippanda.service.archival;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,6 +25,7 @@ import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
 import lovesyk.rippanda.service.web.api.IWebClient;
 import lovesyk.rippanda.settings.OperationMode;
 import lovesyk.rippanda.settings.Settings;
+import lovesyk.rippanda.settings.UpdateInterval;
 
 /**
  * The service responsible for the updating of already archived galleries.
@@ -30,6 +33,7 @@ import lovesyk.rippanda.settings.Settings;
 public class UpdateModeArchivalService extends AbstractArchivalService implements IArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(UpdateModeArchivalService.class);
     private static final String PAGE_FILENAME = "page.html";
+    private static final long UPDATE_DURATION_MIN_MAX_MILLIS = Duration.of(365, ChronoUnit.DAYS).toMillis();
 
     private IWebClient webClient;
 
@@ -168,14 +172,37 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Path dir) throws RipPandaException {
-        Instant threshold = Instant.now().minus(getSettings().getUpdateInterval());
-        FileTime lastModifiedTime;
+        BasicFileAttributes attributes;
         try {
-            lastModifiedTime = Files.getLastModifiedTime(dir);
+            attributes = Files.readAttributes(dir, BasicFileAttributes.class);
         } catch (IOException e) {
-            throw new RipPandaException("Could not read last modified time.", e);
+            throw new RipPandaException("Could not read file attributes.", e);
         }
-        return lastModifiedTime.toInstant().isBefore(threshold);
+
+        Instant threshold = calculateUpdateThreshold(attributes);
+        LOGGER.trace("Gallery update threshold calculated as: {}.", threshold);
+
+        return attributes.lastModifiedTime().toInstant().isBefore(threshold);
+    }
+
+    /**
+     * Calculates the gallery update threshold based on the configured min / max
+     * intervals and gallery file attributes.
+     * 
+     * @param attributes the gallery file attributes
+     * @return the update threshold for the gallery
+     */
+    private Instant calculateUpdateThreshold(BasicFileAttributes attributes) {
+        Instant now = Instant.now();
+        double ratio = (double) (now.toEpochMilli() - attributes.creationTime().toMillis()) / UPDATE_DURATION_MIN_MAX_MILLIS;
+        double sanitizedRatio = Math.min(1, Math.max(0, ratio));
+
+        UpdateInterval updateInterval = getSettings().getUpdateInterval();
+        long millisToAdd = Math.round((updateInterval.getMaxDuration().toMillis() - updateInterval.getMinDuration().toMillis()) * sanitizedRatio);
+        Duration updateDuration = updateInterval.getMinDuration().plusMillis(millisToAdd);
+        Instant threshold = now.minus(updateDuration);
+
+        return threshold;
     }
 
     /**

@@ -3,22 +3,23 @@
 rippanda is an archiver tool for certain gallery websites using the panda-focused content system.
 
 ```
-Usage: rippanda [-v] -c=cookies [-d=time] [-i=period] [-p=host:port] [-s=path] -u=url [-a=path]... [-e=element]... mode
-      mode                       Operation mode: download, update, cleanup
-                                   Default: download
-  -c, --cookies=cookies          Log-in / perk cookies in key=value pairs separated by ;
-  -p, --proxy=host:port          SOCKS5 proxy to use for network requests and DNS resolution.
-  -u, --url=url                  Base URL to use for web requests or a more specific search URL if in download mode
-  -d, --delay=time               Minimum delay between web request in ISO-8601 time format
-                                   Default: 10S
-  -i, --update-interval=period   Minimum interval when deciding whether to update a gallery in ISO-8601 period format
-                                   Default: 30D
-  -a, --archive-dir=path         Directories containing archived galleries (first occurence denotes writable primary path)
-                                   Default: .
-  -s, --success-dir=path         Directory containing success files
-                                   Default: .
-  -e, --skip=element             Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)
-  -v, --verbose                  Specify up to 7 times to override logging verbosity (4 times by default)
+Usage: rippanda [-v] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path] -u=url [-a=path]... [-e=element]... mode
+      mode                         Operation mode: download, update, cleanup
+                                     Default: download
+  -c, --cookies=cookies            Log-in / perk cookies in key=value pairs separated by ;
+  -p, --proxy=host:port            SOCKS5 proxy to use for network requests and DNS resolution.
+  -u, --url=url                    Base URL to use for web requests or a more specific search URL if in download mode
+  -d, --delay=time                 Minimum delay between web request in ISO-8601 time format
+                                     Default: 10S
+  -i, --update-interval=interval   Minimum (created right now) and optionally maximum (created a year ago) interval when deciding whether to update a gallery
+                                     in ISO-8601 period format
+                                     Default: 7D-90D
+  -a, --archive-dir=path           Directories containing archived galleries (first occurence denotes writable primary path)
+                                     Default: .
+  -s, --success-dir=path           Directory containing success files
+                                     Default: .
+  -e, --skip=element               Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)
+  -v, --verbose                    Specify up to 7 times to override logging verbosity (4 times by default)
 
 Example download: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 5S download
 Example update: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org" --skip torrent --skip imagelist --update-interval 10D update

@@ -165,7 +165,8 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Proxy: {}", getProxy());
         LOGGER.info("URL: {}", getUri());
         LOGGER.info("Request delay: {}", getRequestDelay());
-        LOGGER.info("Update interval: {}", getUpdateInterval());
+        LOGGER.info("Min update interval: {}", getUpdateInterval().getMinDuration());
+        LOGGER.info("Max update interval: {}", getUpdateInterval().getMaxDuration());
         LOGGER.info("Archive directories: {}", getArchiveDirectories());
         LOGGER.info("Writable archive directory: {}", getWritableArchiveDirectory());
         LOGGER.info("Success directory: {}", getSuccessDirectory());

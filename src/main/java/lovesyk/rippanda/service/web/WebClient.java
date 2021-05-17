@@ -120,7 +120,6 @@ public class WebClient implements IWebClient {
 
         Registry<ConnectionSocketFactory> registry = registryBuilder.build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
-        connectionManager.setValidateAfterInactivity(Timeout.ofSeconds(2));
 
         httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
 

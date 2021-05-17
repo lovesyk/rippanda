@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -180,7 +181,6 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         }
 
         Instant threshold = calculateUpdateThreshold(attributes);
-        LOGGER.trace("Gallery update threshold calculated as: {}.", threshold);
 
         return attributes.lastModifiedTime().toInstant().isBefore(threshold);
     }
@@ -194,14 +194,16 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      */
     private Instant calculateUpdateThreshold(BasicFileAttributes attributes) {
         Instant now = Instant.now();
-        double ratio = (double) (now.toEpochMilli() - attributes.creationTime().toMillis()) / UPDATE_DURATION_MIN_MAX_MILLIS;
+        FileTime creationTime = attributes.creationTime();
+        double ratio = (double) (now.toEpochMilli() - creationTime.toMillis()) / UPDATE_DURATION_MIN_MAX_MILLIS;
         double sanitizedRatio = Math.min(1, Math.max(0, ratio));
 
         UpdateInterval updateInterval = getSettings().getUpdateInterval();
         long millisToAdd = Math.round((updateInterval.getMaxDuration().toMillis() - updateInterval.getMinDuration().toMillis()) * sanitizedRatio);
         Duration updateDuration = updateInterval.getMinDuration().plusMillis(millisToAdd);
         Instant threshold = now.minus(updateDuration);
-
+        
+        LOGGER.trace("Gallery was created at {} and based on the update interval receives the update threshold: {}.", creationTime, threshold);
         return threshold;
     }
 

@@ -203,7 +203,6 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                     String token = parseToken(metadata);
 
                     gallery = new Gallery(id, token, directory);
-                    gallery.setMetadata(metadata);
                 } else {
                     LOGGER.debug("Skipping gallery directory based on update interval rules: \"{}\"", directory);
                 }

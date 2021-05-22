@@ -72,8 +72,10 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
                 JsonElement metadataElement = gmetadataArray.get(0);
                 if (metadataElement != null && metadataElement.isJsonObject()) {
                     JsonObject metadata = metadataElement.getAsJsonObject();
-                    gallery.setMetadata(metadata);
-                    return;
+                    if (metadata.has("title")) {
+                        gallery.setMetadata(metadata);
+                        return;
+                    }
                 }
             }
         }

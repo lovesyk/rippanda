@@ -5,25 +5,40 @@ import java.time.Duration;
 import lovesyk.rippanda.exception.RipPandaException;
 
 /**
- * Denotes an update interval with multiple durations.
+ * Denotes an update interval with min / max values.
  */
 public class UpdateInterval {
+    private final Duration minThreshold;
     private final Duration minDuration;
+    private final Duration maxThreshold;
     private final Duration maxDuration;
 
     /**
      * Instantiates a new update interval.
      * 
-     * @param minDuration the minimum permitted duration
-     * @param maxDuration the maximum permitted duration
-     * @throws RipPandaException if minimum duration exceeds maximum one
+     * @param minThreshold the threshold of the minimum permitted duration
+     * @param minDuration  the minimum permitted duration
+     * @param maxThreshold the threshold of the maximum permitted duration
+     * @param maxDuration  the maximum permitted duration
+     * @throws RipPandaException if the state is invalid
      */
-    public UpdateInterval(Duration minDuration, Duration maxDuration) throws RipPandaException {
-        if (minDuration.compareTo(maxDuration) > 0) {
-            throw new RipPandaException("Minimum update duration must not be smaller than the maximum one.");
+    public UpdateInterval(Duration minThreshold, Duration minDuration, Duration maxThreshold, Duration maxDuration) throws RipPandaException {
+        if (minThreshold.compareTo(maxThreshold) > 0 || minDuration.compareTo(maxDuration) > 0) {
+            throw new RipPandaException("Minimum update threshold or duration must not be smaller than the maximum one.");
         }
+        this.minThreshold = minThreshold;
         this.minDuration = minDuration;
+        this.maxThreshold = maxThreshold;
         this.maxDuration = maxDuration;
+    }
+
+    /**
+     * Gets the threshold to apply the minimum duration to.
+     * 
+     * @return the minimum threshold
+     */
+    public Duration getMinThreshold() {
+        return minThreshold;
     }
 
     /**
@@ -33,6 +48,15 @@ public class UpdateInterval {
      */
     public Duration getMinDuration() {
         return minDuration;
+    }
+
+    /**
+     * Gets the threshold to apply the maximum duration to.
+     * 
+     * @return the maximum threshold
+     */
+    public Duration getMaxThreshold() {
+        return maxThreshold;
     }
 
     /**

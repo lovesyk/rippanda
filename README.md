@@ -11,9 +11,9 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path]
   -u, --url=url                    Base URL to use for web requests or a more specific search URL if in download mode
   -d, --delay=time                 Minimum delay between web request in ISO-8601 time format
                                      Default: 10S
-  -i, --update-interval=interval   Minimum (created right now) and optionally maximum (created a year ago) interval when deciding whether to update a gallery
-                                     in ISO-8601 period format
-                                     Default: 7D-90D
+  -i, --update-interval=interval   Update interval when deciding whether to update a gallery as ISO-8601 periods in format
+                                     minThreshold=minDuration-maxThreshold=maxDuration
+                                     Default: 0D=7D-365D=90D
   -a, --archive-dir=path           Directories containing archived galleries (first occurence denotes writable primary path)
                                      Default: .
   -s, --success-dir=path           Directory containing success files
@@ -22,7 +22,7 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path]
   -v, --verbose                    Specify up to 7 times to override logging verbosity (4 times by default)
 
 Example download: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 5S download
-Example update: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org" --skip torrent --skip imagelist --update-interval 10D update
+Example update: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org" --skip torrent --skip imagelist --update-interval 0D=30D-0D=30D update
 Example cleanup: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "/home/me/Downloads/success" --archive-dir "/home/me/Downloads/archive" --archive-dir "/home/someoneElse/Downloads/archive" --url "https://somepandasite.org" -vvvvv update
 ```
 
@@ -38,7 +38,7 @@ Currently the following elements will be downloaded and updated:
 - all torrent files associated with the gallery or previous versions
 
 The update logic behaves as following:
-1. A gallery will not be updated if the directory it resides in has been changed within the update interval.
+1. A gallery will not be updated if the directory it resides in has been changed within the interpolated (min / max) duration specified by the update inverval which is calculated based on the timestamp (min / max thresholds) the gallery was posted at.
 2. API metadata and the web page will always be updated if the whole gallery is not to be excluded by the above rule.
 3. Torrent files will be updated / removed if they do not match the API files by comparing their file size and timestamps.
 4. ZIP file, thumbnail and MPV page will only be updated if their files are missing.

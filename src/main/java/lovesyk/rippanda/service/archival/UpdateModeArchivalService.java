@@ -1,20 +1,22 @@
 package lovesyk.rippanda.service.archival;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.inject.Instance;
@@ -33,8 +35,10 @@ import lovesyk.rippanda.settings.UpdateInterval;
  */
 public class UpdateModeArchivalService extends AbstractArchivalService implements IArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(UpdateModeArchivalService.class);
-    private static final String PAGE_FILENAME = "page.html";
-    private static final long UPDATE_DURATION_MIN_MAX_MILLIS = Duration.of(365, ChronoUnit.DAYS).toMillis();
+
+    private static final String METADATA_FILENAME = "api-metadata.json";
+
+    private static final Gson GSON = new Gson();
 
     private IWebClient webClient;
 
@@ -165,24 +169,90 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
     }
 
     /**
-     * Checks if the gallery should be processed or not.
+     * Parses a single gallery from the metadata file in the same directory.
      * 
-     * @param dir the directory of the gallery
-     * @return <code>true</code> if the gallery hasn't been modified for a specific
-     *         time, <code>false</false> otherwise.
+     * @param directory the parent directory of the potential gallery
+     * @return the parsed gallery or <code>null</code> if no gallery is to be
+     *         processed for this directory
      * @throws RipPandaException on failure
      */
-    private boolean isRequired(Path dir) throws RipPandaException {
-        BasicFileAttributes attributes;
-        try {
-            attributes = Files.readAttributes(dir, BasicFileAttributes.class);
-        } catch (IOException e) {
-            throw new RipPandaException("Could not read file attributes.", e);
+    private Gallery parseGallery(Path directory) throws RipPandaException {
+        Gallery gallery = null;
+
+        Path metadataFile = directory.resolve(METADATA_FILENAME);
+        if (Files.exists(metadataFile)) {
+            Instant lastModified = extractLastModifiedInstant(directory);
+
+            Instant now = Instant.now();
+            Duration minDuration = getSettings().getUpdateInterval().getMinDuration();
+            Instant dirThreshold = now.minus(minDuration);
+
+            if (lastModified.isBefore(dirThreshold)) {
+                JsonObject metadata;
+                try (BufferedReader reader = Files.newBufferedReader(metadataFile, StandardCharsets.UTF_8)) {
+                    metadata = GSON.fromJson(reader, JsonObject.class);
+                } catch (IOException | JsonSyntaxException e) {
+                    throw new RipPandaException("Unexpected JSON.", e);
+                }
+
+                Instant posted = parsePostedInstant(metadata);
+
+                Instant threshold = calculateUpdateThreshold(posted);
+                if (lastModified.isBefore(threshold)) {
+                    int id = parseId(metadata);
+                    String token = parseToken(metadata);
+
+                    gallery = new Gallery(id, token, directory);
+                    gallery.setMetadata(metadata);
+                } else {
+                    LOGGER.debug("Skipping gallery directory based on update interval rules: \"{}\"", directory);
+                }
+            } else {
+                LOGGER.debug("Skipping gallery directory which was modified recently: \"{}\"", directory);
+            }
+        } else {
+            LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
         }
 
-        Instant threshold = calculateUpdateThreshold(attributes);
+        return gallery;
+    }
 
-        return attributes.lastModifiedTime().toInstant().isBefore(threshold);
+    /**
+     * Extracts the last modified file instant of the give file.
+     * 
+     * @param path the path to extract from
+     * @return the last modified file instant
+     * @throws RipPandaException on failure
+     */
+    private Instant extractLastModifiedInstant(Path path) throws RipPandaException {
+        FileTime lastModifiedFileTime;
+        try {
+            lastModifiedFileTime = Files.getLastModifiedTime(path);
+        } catch (IOException e) {
+            throw new RipPandaException("Could not read last modified time.", e);
+        }
+        return lastModifiedFileTime.toInstant();
+    }
+
+    /**
+     * Parses the gallery's posted instant from the API metadata.
+     * 
+     * @param metadata the API metadata
+     * @return the parsed posted instant
+     * @throws RipPandaException on failure
+     */
+    private Instant parsePostedInstant(JsonObject metadata) throws RipPandaException {
+        JsonElement postedElement = metadata.get("posted");
+        if (postedElement == null || !postedElement.isJsonPrimitive()) {
+            throw new RipPandaException("Unexpected JSON.");
+        }
+        long postedMilli;
+        try {
+            postedMilli = postedElement.getAsLong();
+        } catch (NumberFormatException e) {
+            throw new RipPandaException("Unexpected JSON.");
+        }
+        return Instant.ofEpochSecond(postedMilli);
     }
 
     /**
@@ -192,62 +262,68 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      * @param attributes the gallery file attributes
      * @return the update threshold for the gallery
      */
-    private Instant calculateUpdateThreshold(BasicFileAttributes attributes) {
+    private Instant calculateUpdateThreshold(Instant posted) {
         Instant now = Instant.now();
-        FileTime creationTime = attributes.creationTime();
-        double ratio = (double) (now.toEpochMilli() - creationTime.toMillis()) / UPDATE_DURATION_MIN_MAX_MILLIS;
-        double sanitizedRatio = Math.min(1, Math.max(0, ratio));
-
         UpdateInterval updateInterval = getSettings().getUpdateInterval();
-        long millisToAdd = Math.round((updateInterval.getMaxDuration().toMillis() - updateInterval.getMinDuration().toMillis()) * sanitizedRatio);
-        Duration updateDuration = updateInterval.getMinDuration().plusMillis(millisToAdd);
+        Duration minThreshold = updateInterval.getMinThreshold();
+        Duration minDuration = updateInterval.getMinDuration();
+        Duration maxThreshold = updateInterval.getMaxThreshold();
+        Duration maxDuration = updateInterval.getMaxDuration();
+
+        Duration postedDuration = Duration.between(posted, now);
+        double ratio;
+        if (postedDuration.compareTo(minThreshold) < 0) {
+            ratio = 0;
+        } else if (postedDuration.compareTo(maxThreshold) > 0) {
+            ratio = 1;
+        } else {
+            Duration position = postedDuration.minus(minThreshold);
+            Duration thresholdDifference = maxThreshold.minus(minThreshold);
+            ratio = (double) position.getSeconds() / thresholdDifference.getSeconds();
+        }
+
+        long millisToAdd = Math.round((maxDuration.toMillis() - minDuration.toMillis()) * ratio);
+        Duration updateDuration = minDuration.plusMillis(millisToAdd);
         Instant threshold = now.minus(updateDuration);
-        
-        LOGGER.trace("Gallery was created at {} and based on the update interval receives the update threshold: {}.", creationTime, threshold);
+
+        LOGGER.trace("As the gallery was posted on {} the update threshold is: {}.", posted, threshold);
         return threshold;
     }
 
     /**
-     * Parses a single gallery, assuming it resides in the same folder as the page
-     * file given.
-     * <p>
-     * To ensure quick parsing this is done purely by text regex without actually
-     * parsing the HTML.
+     * Parses the gallery ID from the API metadata.
      * 
-     * @param directory the parent directory of the potential gallery
-     * @return the parsed gallery
+     * @param metadata the API metadata
+     * @return the parsed ID
      * @throws RipPandaException on failure
      */
-    private Gallery parseGallery(Path directory) throws RipPandaException {
-        Gallery gallery = null;
-
-        Path pageFile = directory.resolve(PAGE_FILENAME);
-        if (Files.exists(pageFile)) {
-            if (isRequired(directory)) {
-                Document page = null;
-                try {
-                    page = getWebClient().loadDocument(pageFile);
-                } catch (RipPandaException e) {
-                    LOGGER.warn("Failed reading file, it will be skipped.", e);
-                }
-
-                if (page != null) {
-                    Element reportElement = page.selectFirst("#gd5 > .g3 > a");
-                    if (reportElement == null) {
-                        throw new RipPandaException("Could not find report element.");
-                    }
-                    Pair<Integer, String> idTokenPair = parseGalleryUrlIdToken(reportElement);
-
-                    gallery = new Gallery(idTokenPair.getLeft(), idTokenPair.getRight(), pageFile.getParent());
-                }
-            } else {
-                LOGGER.debug("Found possible gallery but it has been changed recently and will be skipped: \"{}\"", directory);
-            }
-        } else {
-            LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
+    private int parseId(JsonObject metadata) throws RipPandaException {
+        JsonElement gidElement = metadata.get("gid");
+        if (gidElement == null || !gidElement.isJsonPrimitive()) {
+            throw new RipPandaException("Unexpected JSON.");
         }
+        int id;
+        try {
+            id = gidElement.getAsInt();
+        } catch (NumberFormatException e) {
+            throw new RipPandaException("Unexpected JSON.", e);
+        }
+        return id;
+    }
 
-        return gallery;
+    /**
+     * Parses the gallery token from the API metadata.
+     * 
+     * @param metadata the API metadata
+     * @return the parsed token
+     * @throws RipPandaException on failure
+     */
+    private String parseToken(JsonObject metadata) throws RipPandaException {
+        JsonElement tokenElement = metadata.get("token");
+        if (tokenElement == null || !tokenElement.isJsonPrimitive()) {
+            throw new RipPandaException("Unexpected JSON.");
+        }
+        return tokenElement.getAsString();
     }
 
     /**

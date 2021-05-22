@@ -56,7 +56,7 @@ public class Settings implements Callable<Integer> {
             "--delay" }, paramLabel = "time", description = "Minimum delay between web request in ISO-8601 time format", defaultValue = "10S", showDefaultValue = Visibility.ALWAYS, converter = TimeConverter.class)
     private Duration requestDelay;
     @Option(names = { "-i",
-            "--update-interval" }, paramLabel = "interval", description = "Minimum (created right now) and optionally maximum (created a year ago) interval when deciding whether to update a gallery in ISO-8601 period format", defaultValue = "7D-90D", showDefaultValue = Visibility.ALWAYS, converter = UpdateIntervalConverter.class)
+            "--update-interval" }, paramLabel = "interval", description = "Update interval when deciding whether to update a gallery as ISO-8601 periods in format minThreshold=minDuration-maxThreshold=maxDuration", defaultValue = "0D=7D-365D=90D", showDefaultValue = Visibility.ALWAYS, converter = UpdateIntervalConverter.class)
     private UpdateInterval updateInterval;
     @Option(names = { "-a",
             "--archive-dir" }, paramLabel = "path", description = "Directories containing archived galleries (first occurence denotes writable primary path)", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
@@ -165,7 +165,9 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Proxy: {}", getProxy());
         LOGGER.info("URL: {}", getUri());
         LOGGER.info("Request delay: {}", getRequestDelay());
+        LOGGER.info("Min update threshold: {}", getUpdateInterval().getMinThreshold());
         LOGGER.info("Min update interval: {}", getUpdateInterval().getMinDuration());
+        LOGGER.info("Max update threshold: {}", getUpdateInterval().getMaxThreshold());
         LOGGER.info("Max update interval: {}", getUpdateInterval().getMaxDuration());
         LOGGER.info("Archive directories: {}", getArchiveDirectories());
         LOGGER.info("Writable archive directory: {}", getWritableArchiveDirectory());

@@ -293,11 +293,13 @@ abstract class AbstractElementArchivalService {
      * @throws RipPandaException on failure
      */
     protected boolean processUnavailability(Gallery gallery, Document document) throws RipPandaException {
-        Element copyrightVerificationElement = document.selectFirst(".d > p:first-child:contains(copyright claim)");
-        if (copyrightVerificationElement != null) {
-            markAsUnavailable(gallery, copyrightVerificationElement.text());
+        if (document.title().contains("Gallery Not Available")) {
+            Element messageElement = document.selectFirst(".d > p:first-child");
+            if (messageElement != null) {
+                markAsUnavailable(gallery, messageElement.text());
 
-            return true;
+                return true;
+            }
         }
 
         return false;

@@ -37,15 +37,15 @@ public class FilesUtils {
         Path backupFile = dir.resolve(backupFileName);
 
         try {
-            LOGGER.debug("Writing to temporary file \"{}\"...", tempFile);
+            LOGGER.trace("Writing to temporary file \"{}\"...", tempFile);
             fileWriter.write(tempFile);
 
             if (Files.exists(file)) {
-                LOGGER.debug("Creating backup of existing file \"{}\" as \"{}\"...", file, backupFile);
+                LOGGER.trace("Creating backup of existing file \"{}\" as \"{}\"...", file, backupFile);
                 Files.move(file, backupFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            LOGGER.debug("Removing temporary file extension from \"{}\" into \"{}\"...", tempFile, file);
+            LOGGER.trace("Removing temporary file extension from \"{}\" into \"{}\"...", tempFile, file);
             Files.move(tempFile, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             try {
@@ -60,7 +60,7 @@ public class FilesUtils {
 
         try {
             if (Files.exists(backupFile)) {
-                LOGGER.debug("Removing backup file \"{}\"...", backupFile);
+                LOGGER.trace("Removing backup file \"{}\"...", backupFile);
                 Files.deleteIfExists(backupFile);
             }
         } catch (IOException e) {

@@ -135,7 +135,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      */
     private void process(Gallery gallery) throws RipPandaException, InterruptedException {
         int id = gallery.getId();
-        LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\"", gallery.getId(), gallery.getToken());
+        LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\"", gallery.getId(), gallery.getToken(), gallery.getDir());
 
         if (!isInSuccessIds(id)) {
             addTempSuccessId(id);

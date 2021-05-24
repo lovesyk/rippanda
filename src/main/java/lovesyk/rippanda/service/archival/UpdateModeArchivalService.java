@@ -162,9 +162,11 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
         }
 
         if (!isInSuccessIds(id)) {
-            addSuccessId(id);
+            updateSuccessIds();
+            if (!isInSuccessIds(id)) {
+                addSuccessId(id);
+            }
         }
-        updateSuccessIds();
     }
 
     /**

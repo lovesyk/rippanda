@@ -78,8 +78,9 @@ public class ImageListArchivalService extends AbstractElementArchivalService imp
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
         Document document = getWebClient().loadMpvPage(gallery.getId(), gallery.getToken());
+        Element verificationElement = document.getElementById("pane_outer");
         Element mpvInfoElement = document.selectFirst("body > script:nth-child(3)");
-        if (mpvInfoElement == null) {
+        if (verificationElement == null || mpvInfoElement == null) {
             if (processUnavailability(gallery, document)) {
                 return;
             }

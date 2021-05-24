@@ -1,6 +1,8 @@
 package lovesyk.rippanda.model;
 
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
 
 import com.google.gson.JsonObject;
 
@@ -13,6 +15,8 @@ public class Gallery {
     private final Path dir;
 
     private JsonObject metadata;
+    private List<Path> files;
+    private Instant updateThreshold;
 
     /**
      * Constructs a new gallery.
@@ -82,5 +86,51 @@ public class Gallery {
      */
     public void setMetadata(JsonObject metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Gets a list of all files in the gallery's directory.
+     * 
+     * @return all files in the gallery's directory
+     */
+    public List<Path> getFiles() {
+        return files;
+    }
+
+    /**
+     * Sets the list of all files in the gallery's directory.
+     * 
+     * @param files all files in the gallery's directory
+     */
+    public void setFiles(List<Path> files) {
+        this.files = files;
+    }
+
+    /**
+     * Checks if the gallery's file list is loaded.
+     * 
+     * @return <code>true</code> if the file list is loaded, <code>false</code>
+     *         otherwise
+     */
+    public boolean isFilesLoaded() {
+        return files != null;
+    }
+
+    /**
+     * Gets the date threshold of when to update gallery elements.
+     * 
+     * @return the gallery's update threshold
+     */
+    public Instant getUpdateThreshold() {
+        return updateThreshold;
+    }
+
+    /**
+     * Sets the date threshold of when to update gallery elements.
+     * 
+     * @param updateThreshold the gallery's update threshold
+     */
+    public void setUpdateThreshold(Instant updateThreshold) {
+        this.updateThreshold = updateThreshold;
     }
 }

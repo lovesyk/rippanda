@@ -47,6 +47,7 @@ import lovesyk.rippanda.settings.Settings;
 public class WebClient implements IWebClient {
     private static final Logger LOGGER = LogManager.getLogger(WebClient.class);
     private static final int HTTP_RESPONSE_CODE_SUCCESS = 200;
+    private static final int HTTP_RESPONSE_CODE_NOT_FOUND = 404;
     private static final Timeout DEFAULT_TIMEOUT = Timeout.ofSeconds(10);
 
     private Settings settings;
@@ -192,6 +193,21 @@ public class WebClient implements IWebClient {
     }
 
     /**
+     * Checks the response code of the HTTP response to make sure the call succeeded
+     * for the case where code 404 is allowed.
+     * 
+     * @param response the HTTP response
+     * @throws RipPandaException on failure
+     */
+    private void checkResponseCodeAllowNotFound(CloseableHttpResponse response) throws RipPandaException {
+        int statusCode = response.getCode();
+        if (statusCode != HTTP_RESPONSE_CODE_SUCCESS && statusCode != HTTP_RESPONSE_CODE_NOT_FOUND) {
+            throw new RipPandaException(
+                    String.format("Expected HTTP response code %s or  but received %s.", HTTP_RESPONSE_CODE_SUCCESS, HTTP_RESPONSE_CODE_NOT_FOUND, statusCode));
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -223,7 +239,7 @@ public class WebClient implements IWebClient {
         try (ProxyableHttpClient httpClient = createHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 try {
-                    checkResponseCode(response);
+                    checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
                 } finally {
                     EntityUtils.consumeQuietly(response.getEntity());
@@ -245,7 +261,7 @@ public class WebClient implements IWebClient {
         try (ProxyableHttpClient httpClient = createHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 try {
-                    checkResponseCode(response);
+                    checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
                 } finally {
                     EntityUtils.consumeQuietly(response.getEntity());
@@ -267,7 +283,7 @@ public class WebClient implements IWebClient {
         try (ProxyableHttpClient httpClient = createHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 try {
-                    checkResponseCode(response);
+                    checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
                 } finally {
                     EntityUtils.consumeQuietly(response.getEntity());
@@ -289,7 +305,7 @@ public class WebClient implements IWebClient {
         try (ProxyableHttpClient httpClient = createHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 try {
-                    checkResponseCode(response);
+                    checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
                 } finally {
                     EntityUtils.consumeQuietly(response.getEntity());

@@ -3,13 +3,13 @@ package lovesyk.rippanda.service.archival.element;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +35,8 @@ import lovesyk.rippanda.settings.Settings;
 public class TorrentArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(TorrentArchivalService.class);
 
+    private final static String FILENAME_EXTENSION = ".torrent";
+
     private MetadataArchivalService apiArchivingService;
 
     /**
@@ -59,29 +61,39 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
 
         List<ApiTorrent> apiTorrents = new ArrayList<>();
         if (isRequired) {
-            apiTorrents.addAll(parseApiTorrents(gallery));
-            if (Files.exists(gallery.getDir())) {
-                try (Stream<Path> stream = Files.list(gallery.getDir()).filter(x -> Files.isRegularFile(x) && x.toString().endsWith(".torrent"))) {
-                    for (Path torrent : (Iterable<Path>) stream::iterator) {
+            ensureFilesLoaded(gallery);
+            if (!isUnavailable(gallery)) {
+                apiTorrents.addAll(parseApiTorrents(gallery));
+                for (Path file : gallery.getFiles()) {
+                    if (file.toString().endsWith(FILENAME_EXTENSION)) {
                         ApiTorrent apiTorrent = null;
                         for (ApiTorrent apiTorrentCandidate : apiTorrents) {
-                            if (apiTorrentCandidate.getTorrentSize() == Files.size(torrent)
-                                    && Files.getLastModifiedTime(torrent).toInstant().isAfter(apiTorrentCandidate.getAddedDateTime())) {
+                            long size;
+                            FileTime lastModifiedTime;
+                            try {
+                                size = Files.size(file);
+                                lastModifiedTime = Files.getLastModifiedTime(file);
+                            } catch (IOException e) {
+                                throw new RipPandaException("Could not read file attributes.", e);
+                            }
+                            if (apiTorrentCandidate.getTorrentSize() == size && lastModifiedTime.toInstant().isAfter(apiTorrentCandidate.getAddedDateTime())) {
                                 apiTorrent = apiTorrentCandidate;
                                 break;
                             }
                         }
 
                         if (apiTorrent == null) {
-                            LOGGER.debug("Deleting archived torrent not found on API: \"{}\"", torrent.getFileName());
-                            Files.delete(torrent);
+                            LOGGER.debug("Deleting archived torrent not found on API: \"{}\"", file.getFileName());
+                            try {
+                                Files.delete(file);
+                            } catch (IOException e) {
+                                throw new RipPandaException("Could not delete file.", e);
+                            }
                         } else {
-                            LOGGER.debug("Skipping archived torrent found on API: \"{}\"", torrent.getFileName());
+                            LOGGER.debug("Skipping archived torrent found on API: \"{}\"", file.getFileName());
                             apiTorrents.remove(apiTorrent);
                         }
                     }
-                } catch (IOException e) {
-                    throw new RipPandaException("Could not traverse the given archive directory.", e);
                 }
             }
         }
@@ -91,8 +103,15 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
         } else {
             LOGGER.info("Saving torrents...");
             Document document = getWebClient().loadTorrentPage(gallery.getId(), gallery.getToken());
+            Element torrentInfoElement = document.getElementById("torrentinfo");
+            if (torrentInfoElement == null) {
+                if (processUnavailability(gallery, document)) {
+                    return;
+                }
+                throw new RipPandaException("Could not verify the torrent page got loaded correctly.");
+            }
 
-            Elements torrentUrlElements = document.select("#torrentinfo form a[href*=.torrent]");
+            Elements torrentUrlElements = torrentInfoElement.select("form a[href*=.torrent]");
             List<String> torrentUrlList = torrentUrlElements.stream().map(x -> x.attr("href")).filter(x -> isUrlInApiTorrents(x, apiTorrents))
                     .collect(Collectors.toList());
 

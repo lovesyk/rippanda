@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.stream.Stream;
@@ -181,56 +180,25 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
 
         Path metadataFile = directory.resolve(METADATA_FILENAME);
         if (Files.exists(metadataFile)) {
-            Instant lastModified = extractLastModifiedInstant(directory);
-
-            Instant now = Instant.now();
-            Duration minDuration = getSettings().getUpdateInterval().getMinDuration();
-            Instant dirThreshold = now.minus(minDuration);
-
-            if (lastModified.isBefore(dirThreshold)) {
-                JsonObject metadata;
-                try (BufferedReader reader = Files.newBufferedReader(metadataFile, StandardCharsets.UTF_8)) {
-                    metadata = GSON.fromJson(reader, JsonObject.class);
-                } catch (IOException | JsonSyntaxException e) {
-                    throw new RipPandaException("Unexpected JSON.", e);
-                }
-
-                Instant posted = parsePostedInstant(metadata);
-
-                Instant threshold = calculateUpdateThreshold(posted);
-                if (lastModified.isBefore(threshold)) {
-                    int id = parseId(metadata);
-                    String token = parseToken(metadata);
-
-                    gallery = new Gallery(id, token, directory);
-                } else {
-                    LOGGER.debug("Skipping gallery directory based on update interval rules: \"{}\"", directory);
-                }
-            } else {
-                LOGGER.debug("Skipping gallery directory which was modified recently: \"{}\"", directory);
+            JsonObject metadata;
+            try (BufferedReader reader = Files.newBufferedReader(metadataFile, StandardCharsets.UTF_8)) {
+                metadata = GSON.fromJson(reader, JsonObject.class);
+            } catch (IOException | JsonSyntaxException e) {
+                throw new RipPandaException("Unexpected JSON.", e);
             }
+
+            int id = parseId(metadata);
+            String token = parseToken(metadata);
+            Instant posted = parsePostedInstant(metadata);
+            gallery = new Gallery(id, token, directory);
+
+            Instant threshold = calculateUpdateThreshold(posted);
+            gallery.setUpdateThreshold(threshold);
         } else {
             LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
         }
 
         return gallery;
-    }
-
-    /**
-     * Extracts the last modified file instant of the give file.
-     * 
-     * @param path the path to extract from
-     * @return the last modified file instant
-     * @throws RipPandaException on failure
-     */
-    private Instant extractLastModifiedInstant(Path path) throws RipPandaException {
-        FileTime lastModifiedFileTime;
-        try {
-            lastModifiedFileTime = Files.getLastModifiedTime(path);
-        } catch (IOException e) {
-            throw new RipPandaException("Could not read last modified time.", e);
-        }
-        return lastModifiedFileTime.toInstant();
     }
 
     /**

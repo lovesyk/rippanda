@@ -1,7 +1,5 @@
 package lovesyk.rippanda.service.archival.element;
 
-import java.nio.file.Files;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,9 +52,17 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
      * 
      * @return <code>true</code> if thumbnail archival is active but no thumbnail
      *         was found on disk, <code>false</false> otherwise.
+     * @throws RipPandaException on failure
      */
-    private boolean isRequired(Gallery gallery) {
-        return getSettings().isThumbnailActive() && (!Files.isRegularFile(gallery.getDir().resolve(FILENAME)));
+    private boolean isRequired(Gallery gallery) throws RipPandaException {
+        boolean isRequired = getSettings().isThumbnailActive();
+
+        if (isRequired) {
+            ensureFilesLoaded(gallery);
+            isRequired = !isUnavailable(gallery) && gallery.getFiles().stream().noneMatch(x -> FILENAME.equals(String.valueOf(x.getFileName())));
+        }
+
+        return isRequired;
     }
 
     /**

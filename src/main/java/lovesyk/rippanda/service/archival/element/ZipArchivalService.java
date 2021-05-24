@@ -1,7 +1,5 @@
 package lovesyk.rippanda.service.archival.element;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +22,9 @@ import lovesyk.rippanda.settings.Settings;
  * The archival service for gallery ZIP elements.
  */
 public class ZipArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
+    private static final String UNAVAILABLE = "UNAVAILABLE";
     private static final Logger LOGGER = LogManager.getLogger(ZipArchivalService.class);
+    private static final String FILENAME_EXTENSION = ".zip";
     private static final int ARCHIVE_PREPARATION_RETRIES = 10;
     private static final Pattern CONTINUE_SCRIPT_TIMEOUT_PATTERN = Pattern.compile("setTimeout\\(.*?, (\\d+)\\)");
 
@@ -65,16 +65,10 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException {
         boolean isRequired = getSettings().isZipActive();
-        if (isRequired) {
-            isRequired = true;
 
-            if (Files.isDirectory(gallery.getDir())) {
-                try {
-                    isRequired = Files.list(gallery.getDir()).noneMatch(x -> x.toString().endsWith(".zip"));
-                } catch (IOException e) {
-                    throw new RipPandaException("Could not check if ZIP file already exists.", e);
-                }
-            }
+        if (isRequired) {
+            ensureFilesLoaded(gallery);
+            isRequired = !isUnavailable(gallery) && gallery.getFiles().stream().noneMatch(x -> x.toString().endsWith(FILENAME_EXTENSION));
         }
 
         return isRequired;
@@ -91,7 +85,10 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
         getApiArchivingService().ensureLoaded(gallery);
         String archiverKey = parseArchiverKey(gallery.getMetadata());
 
-        String archiveUrl = loadArchiveUrl(gallery.getId(), gallery.getToken(), archiverKey);
+        String archiveUrl = loadArchiveUrl(gallery, archiverKey);
+        if (archiveUrl == UNAVAILABLE) {
+            return;
+        }
 
         getWebClient().downloadFile(archiveUrl, (downloadableArchive) -> {
             String mimeType = downloadableArchive.getMimeType();
@@ -128,22 +125,24 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      * Loads the gallery ZIP URL by querying the web service and waiting for the
      * file to become available.
      * 
-     * @param id          the gallery ID
-     * @param token       the gallery token
+     * @param document    the gallery document
      * @param archiverKey the gallery archiver key as returned by the API
      * @return the gallery ZIP URL
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    private String loadArchiveUrl(int id, String token, String archiverKey) throws RipPandaException, InterruptedException {
+    private String loadArchiveUrl(Gallery gallery, String archiverKey) throws RipPandaException, InterruptedException {
         LOGGER.debug("Generating ZIP URL...");
-        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(id, token, archiverKey);
+        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(gallery.getId(), gallery.getToken(), archiverKey);
 
         for (int i = 0;; ++i) {
             Element continueUrlElement = archivePreparationPage.selectFirst("#continue a");
             if (continueUrlElement == null) {
                 Element archiveUrlElement = archivePreparationPage.selectFirst("#db a");
                 if (archiveUrlElement == null) {
+                    if (processUnavailability(gallery, archivePreparationPage)) {
+                        return UNAVAILABLE;
+                    }
                     throw new RipPandaException("Could not find archive URL element.");
                 }
                 return archiveUrlElement.attr("abs:href");

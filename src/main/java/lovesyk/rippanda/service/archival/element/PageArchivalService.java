@@ -1,7 +1,10 @@
 package lovesyk.rippanda.service.archival.element;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,15 +54,31 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
      * Checks if the page should be saved or not.
      * 
      * @return <code>true</code> if page archival is active but no page has been
-     *         found on disk or update mode is active, <code>false</false> otherwise.
+     *         found on disk or update mode is active, <code>false</false>
+     *         otherwise.
      * @throws RipPandaException on failure
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException {
         boolean isRequired = getSettings().isPageActive();
 
         if (isRequired) {
-            Path pageFile = gallery.getDir().resolve(FILENAME);
-            isRequired = getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(pageFile);
+            ensureFilesLoaded(gallery);
+            if (!isUnavailable(gallery)) {
+                Optional<Path> pageFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
+                if (pageFile.isPresent()) {
+                    if (getSettings().getOperationMode() == OperationMode.UPDATE) {
+                        FileTime lastModifiedTime;
+                        try {
+                            lastModifiedTime = Files.getLastModifiedTime(pageFile.get());
+                        } catch (IOException e) {
+                            throw new RipPandaException("Could not retrieve last modified time.", e);
+                        }
+                        isRequired = lastModifiedTime.toInstant().isBefore(gallery.getUpdateThreshold());
+                    } else {
+                        isRequired = false;
+                    }
+                }
+            }
         }
 
         return isRequired;
@@ -76,6 +95,9 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
         Document document = getWebClient().loadPage(gallery.getId(), gallery.getToken());
         Element verificationElement = document.getElementById("rating_label");
         if (verificationElement == null) {
+            if (processUnavailability(gallery, document)) {
+                return;
+            }
             throw new RipPandaException("Could not verify the gallery page got loaded correctly.");
         }
 

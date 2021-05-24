@@ -1,7 +1,5 @@
 package lovesyk.rippanda.service.archival.element;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,8 +62,8 @@ public class ImageListArchivalService extends AbstractElementArchivalService imp
         boolean isRequired = getSettings().isImageListActive();
 
         if (isRequired) {
-            Path imageListFile = gallery.getDir().resolve(FILENAME);
-            isRequired = !Files.isRegularFile(imageListFile);
+            ensureFilesLoaded(gallery);
+            isRequired = !isUnavailable(gallery) && gallery.getFiles().stream().noneMatch(x -> FILENAME.equals(String.valueOf(x.getFileName())));
         }
 
         return isRequired;
@@ -82,6 +80,9 @@ public class ImageListArchivalService extends AbstractElementArchivalService imp
         Document document = getWebClient().loadMpvPage(gallery.getId(), gallery.getToken());
         Element mpvInfoElement = document.selectFirst("body > script:nth-child(3)");
         if (mpvInfoElement == null) {
+            if (processUnavailability(gallery, document)) {
+                return;
+            }
             throw new RipPandaException("Could not find MPV info element.");
         }
 

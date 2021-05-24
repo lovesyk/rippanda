@@ -1,9 +1,12 @@
 package lovesyk.rippanda.service.archival.element;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,13 +105,27 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      * @return <code>true</code> if metadata archival is active but no metadata has
      *         been found on disk or update mode is active, <code>false</false>
      *         otherwise.
+     * @throws RipPandaException on failure
      */
-    private boolean isRequired(Gallery gallery) {
+    private boolean isRequired(Gallery gallery) throws RipPandaException {
         boolean isRequired = getSettings().isMetadataActive();
 
         if (isRequired) {
-            Path metadataFile = gallery.getDir().resolve(FILENAME);
-            isRequired = getSettings().getOperationMode() == OperationMode.UPDATE || !Files.isRegularFile(metadataFile);
+            ensureFilesLoaded(gallery);
+            Optional<Path> metadataFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
+            if (metadataFile.isPresent()) {
+                if (getSettings().getOperationMode() == OperationMode.UPDATE) {
+                    FileTime lastModifiedTime;
+                    try {
+                        lastModifiedTime = Files.getLastModifiedTime(metadataFile.get());
+                    } catch (IOException e) {
+                        throw new RipPandaException("Could not retrieve last modified time.", e);
+                    }
+                    isRequired = lastModifiedTime.toInstant().isBefore(gallery.getUpdateThreshold());
+                } else {
+                    isRequired = false;
+                }
+            }
         }
 
         return isRequired;

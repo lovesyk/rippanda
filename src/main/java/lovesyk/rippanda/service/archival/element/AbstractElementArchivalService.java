@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -15,6 +17,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,6 +26,7 @@ import com.google.gson.JsonElement;
 
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
+import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.service.archival.api.FilesUtils;
 import lovesyk.rippanda.service.web.api.IWebClient;
 import lovesyk.rippanda.settings.Settings;
@@ -32,6 +37,8 @@ import lovesyk.rippanda.settings.Settings;
 abstract class AbstractElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(AbstractElementArchivalService.class);
     protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    private static final String UNAVAILABLE_FILENAME = "unavailable.txt";
 
     /**
      * 259 characters according to Windows MAX_PATH.
@@ -248,6 +255,80 @@ abstract class AbstractElementArchivalService {
         }
 
         return sanitizedFilename;
+    }
+
+    /**
+     * Ensures the gallery's initial files are loaded, reading from file system if
+     * required.
+     * 
+     * @param gallery the gallery to check
+     * @throws RipPandaException on failure
+     */
+    public void ensureFilesLoaded(Gallery gallery) throws RipPandaException {
+        if (!gallery.isFilesLoaded()) {
+            List<Path> files = new ArrayList<Path>();
+
+            Path dir = gallery.getDir();
+            if (Files.isDirectory(dir)) {
+                try {
+                    Files.list(dir).filter(Files::isRegularFile).forEach(files::add);
+                } catch (IOException e) {
+                    throw new RipPandaException("Could not retrieve directory's files.");
+                }
+            }
+
+            gallery.setFiles(files);
+        }
+    }
+
+    /**
+     * Processes the gallery to check whether it needs to be marked as unavailable
+     * and if yes, does so.
+     * 
+     * @param gallery  the gallery to process
+     * @param document the document indicating whether the gallery could be
+     *                 unavailable
+     * @return <code>true</code> if the the gallery was successfully marked as
+     *         unavailable, <code>false</code> otherwise
+     * @throws RipPandaException on failure
+     */
+    protected boolean processUnavailability(Gallery gallery, Document document) throws RipPandaException {
+        Element copyrightVerificationElement = document.selectFirst(".d > p:first-child:contains(copyright claim)");
+        if (copyrightVerificationElement != null) {
+            markAsUnavailable(gallery, copyrightVerificationElement.text());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Marks the given gallery as no longer being available online.
+     * 
+     * @param gallery the gallery to mark
+     * @param reason  the reason for the unavailability
+     * @throws RipPandaException on failure
+     */
+    protected void markAsUnavailable(Gallery gallery, String reason) throws RipPandaException {
+        LOGGER.warn("Marking the gallery as no longer available according to: {}", reason);
+
+        save(reason, gallery.getDir(), UNAVAILABLE_FILENAME);
+
+        if (gallery.isFilesLoaded()) {
+            gallery.getFiles().add(gallery.getDir().resolve(UNAVAILABLE_FILENAME));
+        }
+    }
+
+    /**
+     * Checks whether the given gallery is no longer available online.
+     * 
+     * @param gallery the gallery to check
+     * @return <code>true</code> if the the gallery is unavailable,
+     *         <code>false</code> otherwise
+     */
+    protected boolean isUnavailable(Gallery gallery) {
+        return gallery.getFiles().stream().anyMatch(x -> UNAVAILABLE_FILENAME.equals(String.valueOf(x.getFileName())));
     }
 
     /**

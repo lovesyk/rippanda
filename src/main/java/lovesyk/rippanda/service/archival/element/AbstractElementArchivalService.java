@@ -178,7 +178,7 @@ abstract class AbstractElementArchivalService {
      * @throws RipPandaException on failure
      */
     protected String sanitizeFileName(Path dir, String filename, boolean unique) throws RipPandaException {
-        LOGGER.debug("Sanitizing the filename \"{}\"...", filename);
+        LOGGER.trace("Sanitizing the filename \"{}\"...", filename);
 
         String sanitizedFilename = filename;
 

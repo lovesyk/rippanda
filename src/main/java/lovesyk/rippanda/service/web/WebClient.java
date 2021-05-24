@@ -167,7 +167,7 @@ public class WebClient implements IWebClient {
             LOGGER.debug("Waiting for {} seconds...", millisToWait / 1000.0);
             Thread.sleep(millisToWait);
         } else {
-            LOGGER.debug("No waiting required at this point.");
+            LOGGER.trace("No waiting required at this point.");
         }
     }
 

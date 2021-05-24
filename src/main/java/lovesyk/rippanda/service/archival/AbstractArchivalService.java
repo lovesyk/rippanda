@@ -90,7 +90,7 @@ public abstract class AbstractArchivalService {
      * @throws RipPandaException on failure
      */
     protected void initDirs() throws RipPandaException {
-        LOGGER.debug("Making sure success and archive directories exist...");
+        LOGGER.trace("Making sure success and archive directories exist...");
         if (!Files.isDirectory(getSettings().getSuccessDirectory().getParent())) {
             throw new RipPandaException("Parent of the success directory does not exist.");
         }

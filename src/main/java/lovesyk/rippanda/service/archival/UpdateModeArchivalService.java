@@ -100,8 +100,13 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
 
         try (Stream<Path> stream = Files.walk(getSettings().getWritableArchiveDirectory()).filter(Files::isDirectory)) {
             for (Path directory : (Iterable<Path>) stream::iterator) {
+                LOGGER.trace("Processing directory \"{}\"...", directory);
                 Gallery gallery = parseGallery(directory);
-                if (gallery != null) {
+                if (gallery == null) {
+                    LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
+                } else {
+                    LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\"", gallery.getId(), gallery.getToken(),
+                            gallery.getDir());
                     try {
                         process(gallery);
                         failureCount = 0;
@@ -135,8 +140,6 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      */
     private void process(Gallery gallery) throws RipPandaException, InterruptedException {
         int id = gallery.getId();
-        LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\"", gallery.getId(), gallery.getToken(), gallery.getDir());
-
         if (!isInSuccessIds(id)) {
             addTempSuccessId(id);
         }
@@ -197,8 +200,6 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
 
             Instant threshold = calculateUpdateThreshold(posted);
             gallery.setUpdateThreshold(threshold);
-        } else {
-            LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
         }
 
         return gallery;

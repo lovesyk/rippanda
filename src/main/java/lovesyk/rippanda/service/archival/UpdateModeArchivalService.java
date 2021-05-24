@@ -191,6 +191,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
             String token = parseToken(metadata);
             Instant posted = parsePostedInstant(metadata);
             gallery = new Gallery(id, token, directory);
+            gallery.setMetadata(metadata);
 
             Instant threshold = calculateUpdateThreshold(posted);
             gallery.setUpdateThreshold(threshold);

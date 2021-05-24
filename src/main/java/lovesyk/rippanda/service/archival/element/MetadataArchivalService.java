@@ -43,7 +43,8 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     }
 
     /**
-     * Ensures the metadata is loaded for the given gallery, loading it if required.
+     * Ensures the metadata is loaded and up-to-date for the given gallery, loading
+     * it if required.
      * 
      * @param gallery the gallery to check
      * @throws RipPandaException    on failure
@@ -52,6 +53,13 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     public void ensureLoaded(Gallery gallery) throws RipPandaException, InterruptedException {
         if (!gallery.isMetadataLoaded()) {
             load(gallery);
+        }
+        if (!gallery.isMetadataUpToDate()) {
+            if (isUpdatingRequired(gallery)) {
+                load(gallery);
+            } else {
+                gallery.setMetadataUpToDate(true);
+            }
         }
     }
 
@@ -77,6 +85,7 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
                     JsonObject metadata = metadataElement.getAsJsonObject();
                     if (metadata.has("title")) {
                         gallery.setMetadata(metadata);
+                        gallery.setMetadataUpToDate(true);
                         return;
                     }
                 }
@@ -102,8 +111,8 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
     /**
      * Checks if metadata should be saved or not.
      * 
-     * @return <code>true</code> if metadata archival is active but no metadata has
-     *         been found on disk or update mode is active, <code>false</false>
+     * @param gallery the gallery to check
+     * @return <code>true</code> if metadata should be archived, <code>false</false>
      *         otherwise.
      * @throws RipPandaException on failure
      */
@@ -111,21 +120,38 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
         boolean isRequired = getSettings().isMetadataActive();
 
         if (isRequired) {
+            isRequired = isUpdatingRequired(gallery);
+        }
+
+        return isRequired;
+    }
+
+    /**
+     * Checks if the metadata is up-to-date or whether it needs to be updated.
+     * 
+     * @param gallery the gallery to check
+     * @return <code>true</code> if metadata is considered out-of-date and needs to
+     *         be updated, <code>false</false> otherwise.
+     * @throws RipPandaException on failure
+     */
+    private boolean isUpdatingRequired(Gallery gallery) throws RipPandaException {
+        boolean isRequired = true;
+
+        if (getSettings().getOperationMode() == OperationMode.UPDATE) {
             ensureFilesLoaded(gallery);
             Optional<Path> metadataFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
             if (metadataFile.isPresent()) {
-                if (getSettings().getOperationMode() == OperationMode.UPDATE) {
-                    FileTime lastModifiedTime;
-                    try {
-                        lastModifiedTime = Files.getLastModifiedTime(metadataFile.get());
-                    } catch (IOException e) {
-                        throw new RipPandaException("Could not retrieve last modified time.", e);
-                    }
-                    isRequired = lastModifiedTime.toInstant().isBefore(gallery.getUpdateThreshold());
-                } else {
-                    isRequired = false;
+
+                FileTime lastModifiedTime;
+                try {
+                    lastModifiedTime = Files.getLastModifiedTime(metadataFile.get());
+                } catch (IOException e) {
+                    throw new RipPandaException("Could not retrieve last modified time.", e);
                 }
+                isRequired = lastModifiedTime.toInstant().isBefore(gallery.getUpdateThreshold());
             }
+        } else {
+            isRequired = false;
         }
 
         return isRequired;

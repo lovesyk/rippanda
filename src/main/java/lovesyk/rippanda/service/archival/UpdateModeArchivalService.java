@@ -22,6 +22,7 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
+import lovesyk.rippanda.model.MetadataState;
 import lovesyk.rippanda.service.archival.api.IArchivalService;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
 import lovesyk.rippanda.service.web.api.IWebClient;
@@ -196,7 +197,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
             String token = parseToken(metadata);
             Instant posted = parsePostedInstant(metadata);
             gallery = new Gallery(id, token, directory);
-            gallery.setMetadata(metadata);
+            gallery.setMetadata(metadata, MetadataState.DISK);
 
             Instant threshold = calculateUpdateThreshold(posted);
             gallery.setUpdateThreshold(threshold);

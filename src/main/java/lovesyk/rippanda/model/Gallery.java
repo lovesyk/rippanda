@@ -15,7 +15,7 @@ public class Gallery {
     private final Path dir;
 
     private JsonObject metadata;
-    private boolean metadataUpToDate;
+    private MetadataState metadataState;
     private List<Path> files;
     private Instant updateThreshold;
 
@@ -83,31 +83,21 @@ public class Gallery {
      * <p>
      * The validity of the metadata is not checked at this point.
      * 
-     * @param metadata the gallery metadata
+     * @param metadata      the gallery metadata
+     * @param metadataState the current state of the given metadata
      */
-    public void setMetadata(JsonObject metadata) {
+    public void setMetadata(JsonObject metadata, MetadataState metadataState) {
         this.metadata = metadata;
+        this.metadataState = metadataState;
     }
 
     /**
-     * Checks whether the currently loaded metadata is considered being up-to-date
-     * or whether it needs to be refreshed.
+     * Gets the state of the currently loaded metadata.
      * 
-     * @return <code>true</code> if the metadata is up to-date, <code>false</code>
-     *         otherwise
+     * @return the state of the metadata
      */
-    public boolean isMetadataUpToDate() {
-        return metadataUpToDate;
-    }
-
-    /**
-     * Sets whether the currently loaded metadata is up-to-date or not.
-     * 
-     * @param metadataUpToDate whether the currently loaded metadata is up-to-date
-     *                         or not
-     */
-    public void setMetadataUpToDate(boolean metadataUpToDate) {
-        this.metadataUpToDate = metadataUpToDate;
+    public MetadataState getMetadataState() {
+        return metadataState;
     }
 
     /**

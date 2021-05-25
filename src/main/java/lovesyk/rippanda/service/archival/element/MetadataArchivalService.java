@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
+import lovesyk.rippanda.model.MetadataState;
 import lovesyk.rippanda.service.archival.api.FilesUtils;
 import lovesyk.rippanda.service.archival.element.api.IElementArchivalService;
 import lovesyk.rippanda.service.web.api.IWebClient;
@@ -50,16 +51,30 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    public void ensureLoaded(Gallery gallery) throws RipPandaException, InterruptedException {
+    public void ensureLoadedUpToDate(Gallery gallery) throws RipPandaException, InterruptedException {
         if (!gallery.isMetadataLoaded()) {
             load(gallery);
         }
-        if (!gallery.isMetadataUpToDate()) {
+        if (gallery.getMetadataState() == MetadataState.DISK) {
             if (isUpdatingRequired(gallery)) {
                 load(gallery);
             } else {
-                gallery.setMetadataUpToDate(true);
+                gallery.setMetadata(gallery.getMetadata(), MetadataState.DISK_UP_TO_DATE);
             }
+        }
+    }
+
+    /**
+     * Ensures the metadata is freshly loaded online for the given gallery, loading
+     * it if required.
+     * 
+     * @param gallery the gallery to check
+     * @throws RipPandaException    on failure
+     * @throws InterruptedException on interruption
+     */
+    public void ensureLoadedOnline(Gallery gallery) throws RipPandaException, InterruptedException {
+        if (!gallery.isMetadataLoaded() || gallery.getMetadataState() != MetadataState.ONLINE) {
+            load(gallery);
         }
     }
 
@@ -84,8 +99,7 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
                 if (metadataElement != null && metadataElement.isJsonObject()) {
                     JsonObject metadata = metadataElement.getAsJsonObject();
                     if (metadata.has("title")) {
-                        gallery.setMetadata(metadata);
-                        gallery.setMetadataUpToDate(true);
+                        gallery.setMetadata(metadata, MetadataState.ONLINE);
                         return;
                     }
                 }
@@ -165,7 +179,7 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      * @throws InterruptedException on interruption
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
-        ensureLoaded(gallery);
+        ensureLoadedUpToDate(gallery);
         initDir(gallery.getDir());
         FilesUtils.save(file -> write(gallery.getMetadata(), file), gallery.getDir(), FILENAME);
     }

@@ -73,7 +73,7 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
      * @throws InterruptedException on interruption
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
-        getApiArchivingService().ensureLoaded(gallery);
+        getApiArchivingService().ensureLoadedUpToDate(gallery);
 
         JsonElement thumbElement = gallery.getMetadata().get("thumb");
         if (thumbElement == null || !thumbElement.isJsonPrimitive()) {

@@ -82,7 +82,7 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      * @throws InterruptedException on interruption
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
-        getApiArchivingService().ensureLoaded(gallery);
+        getApiArchivingService().ensureLoadedOnline(gallery);
         String archiverKey = parseArchiverKey(gallery.getMetadata());
 
         String archiveUrl = loadArchiveUrl(gallery, archiverKey);

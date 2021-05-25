@@ -145,7 +145,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
      * @throws InterruptedException on interruption
      */
     private List<ApiTorrent> parseApiTorrents(Gallery gallery) throws RipPandaException, InterruptedException {
-        getApiArchivingService().ensureLoaded(gallery);
+        getApiArchivingService().ensureLoadedUpToDate(gallery);
 
         List<ApiTorrent> result = new ArrayList<>();
 

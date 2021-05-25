@@ -216,7 +216,9 @@ abstract class AbstractElementArchivalService {
             LOGGER.debug("Filename was shortened to \"{}\".", sanitizedFilename);
         }
 
+        baseName = FilenameUtils.getBaseName(sanitizedFilename);
         String nonCollidingFilename = sanitizedFilename;
+
         int maxSuffix = unique ? 1 : 99;
         for (int i = 1; i <= maxSuffix; ++i) {
             if (i > 1) {

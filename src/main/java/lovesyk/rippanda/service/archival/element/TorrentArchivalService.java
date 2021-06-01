@@ -90,7 +90,7 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
                                 throw new RipPandaException("Could not delete file.", e);
                             }
                         } else {
-                            LOGGER.debug("Skipping archived torrent found on API: \"{}\"", file.getFileName());
+                            LOGGER.trace("Skipping archived torrent found on API: \"{}\"", file.getFileName());
                             apiTorrents.remove(apiTorrent);
                         }
                     }

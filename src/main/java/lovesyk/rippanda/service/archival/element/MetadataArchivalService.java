@@ -149,23 +149,18 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      * @throws RipPandaException on failure
      */
     private boolean isUpdatingRequired(Gallery gallery) throws RipPandaException {
-        boolean isRequired = true;
+        ensureFilesLoaded(gallery);
+        Optional<Path> metadataFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
+        boolean isRequired = !metadataFile.isPresent();
 
-        if (getSettings().getOperationMode() == OperationMode.UPDATE) {
-            ensureFilesLoaded(gallery);
-            Optional<Path> metadataFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
-            if (metadataFile.isPresent()) {
-
-                FileTime lastModifiedTime;
-                try {
-                    lastModifiedTime = Files.getLastModifiedTime(metadataFile.get());
-                } catch (IOException e) {
-                    throw new RipPandaException("Could not retrieve last modified time.", e);
-                }
-                isRequired = lastModifiedTime.toInstant().isBefore(gallery.getUpdateThreshold());
+        if (metadataFile.isPresent() && getSettings().getOperationMode() == OperationMode.UPDATE) {
+            FileTime lastModifiedTime;
+            try {
+                lastModifiedTime = Files.getLastModifiedTime(metadataFile.get());
+            } catch (IOException e) {
+                throw new RipPandaException("Could not retrieve last modified time.", e);
             }
-        } else {
-            isRequired = false;
+            isRequired = lastModifiedTime.toInstant().isBefore(gallery.getUpdateThreshold());
         }
 
         return isRequired;

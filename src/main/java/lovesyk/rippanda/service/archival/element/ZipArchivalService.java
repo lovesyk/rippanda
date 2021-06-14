@@ -25,7 +25,7 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
     private static final String UNAVAILABLE = "UNAVAILABLE";
     private static final Logger LOGGER = LogManager.getLogger(ZipArchivalService.class);
     private static final String FILENAME_EXTENSION = ".zip";
-    private static final int ARCHIVE_PREPARATION_RETRIES = 10;
+    private static final int ARCHIVE_PREPARATION_RETRIES = 30;
     private static final Pattern CONTINUE_SCRIPT_TIMEOUT_PATTERN = Pattern.compile("setTimeout\\(.*?, (\\d+)\\)");
 
     private MetadataArchivalService apiArchivingService;

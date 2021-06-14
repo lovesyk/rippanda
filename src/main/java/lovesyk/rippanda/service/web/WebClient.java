@@ -103,8 +103,8 @@ public class WebClient implements IWebClient {
         }
         httpClientBuilder.setDefaultCookieStore(cookieStore);
 
-        RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT).setConnectTimeout(DEFAULT_TIMEOUT).setConnectionRequestTimeout(DEFAULT_TIMEOUT)
-                .build();
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(DEFAULT_TIMEOUT).setConnectionRequestTimeout(DEFAULT_TIMEOUT)
+                .setResponseTimeout(DEFAULT_TIMEOUT).build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
         RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create();

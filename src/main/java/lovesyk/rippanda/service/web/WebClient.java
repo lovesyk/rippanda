@@ -48,7 +48,7 @@ public class WebClient implements IWebClient {
     private static final Logger LOGGER = LogManager.getLogger(WebClient.class);
     private static final int HTTP_RESPONSE_CODE_SUCCESS = 200;
     private static final int HTTP_RESPONSE_CODE_NOT_FOUND = 404;
-    private static final Timeout DEFAULT_TIMEOUT = Timeout.ofSeconds(10);
+    private static final Timeout DEFAULT_TIMEOUT = Timeout.ofSeconds(30);
 
     private Settings settings;
     private WebClientRequestFactory requestFactory;

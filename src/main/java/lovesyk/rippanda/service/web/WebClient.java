@@ -20,7 +20,10 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.URIScheme;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -103,28 +106,45 @@ public class WebClient implements IWebClient {
         }
         httpClientBuilder.setDefaultCookieStore(cookieStore);
 
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(DEFAULT_TIMEOUT).setConnectionRequestTimeout(DEFAULT_TIMEOUT)
+        RequestConfig requestConfig = RequestConfig.custom() //
+                .setConnectTimeout(DEFAULT_TIMEOUT) //
+                .setConnectionRequestTimeout(DEFAULT_TIMEOUT) //
                 .setResponseTimeout(DEFAULT_TIMEOUT).build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
-        RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create();
+        PoolingHttpClientConnectionManager connectionManager = createConnectionManager();
+        httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
+
+        this.httpClientBuilder = httpClientBuilder;
+    }
+
+    /**
+     * Created the connection manager to use while considering proxy settings.
+     * 
+     * @return the optionally proxied connection manager
+     */
+    private PoolingHttpClientConnectionManager createConnectionManager() {
+        ConnectionSocketFactory plainConnectionSocketFactory;
+        ConnectionSocketFactory sslConnectionSocketFactory;
         DnsResolver dnsResolver;
         if (getSettings().getProxy() != null) {
             // https://stackoverflow.com/a/25203021
-            registryBuilder.register("http", new ProxiedPlainConnectionSocketFactory());
-            registryBuilder.register("https", new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault()));
+            plainConnectionSocketFactory = new ProxiedPlainConnectionSocketFactory();
+            sslConnectionSocketFactory = new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault());
             dnsResolver = new FakeDnsResolver();
         } else {
+            // org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder.build()
+            plainConnectionSocketFactory = PlainConnectionSocketFactory.getSocketFactory();
+            sslConnectionSocketFactory = SSLConnectionSocketFactory.getSocketFactory();
             // default DNS resolver will be set by Apache
             dnsResolver = null;
         }
 
-        Registry<ConnectionSocketFactory> registry = registryBuilder.build();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
-
-        httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
-
-        this.httpClientBuilder = httpClientBuilder;
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create() //
+                .register(URIScheme.HTTP.id, plainConnectionSocketFactory) //
+                .register(URIScheme.HTTPS.id, sslConnectionSocketFactory) //
+                .build();
+        return new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
     }
 
     /**

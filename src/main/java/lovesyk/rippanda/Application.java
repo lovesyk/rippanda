@@ -25,10 +25,6 @@ public class Application {
         LOGGER.info("Starting application...");
         int status = 1;
 
-        // TODO handle Java 9+ reflective access warning in a better way
-        System.err.close();
-        System.setErr(System.out);
-
         SeContainerInitializer initializer = SeContainerInitializer.newInstance().disableDiscovery().addPackages(true, Application.class);
         try (SeContainer container = initializer.initialize()) {
             Settings settings = container.select(Settings.class).get();

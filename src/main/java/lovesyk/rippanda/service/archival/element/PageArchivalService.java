@@ -63,7 +63,9 @@ public class PageArchivalService extends AbstractElementArchivalService implemen
 
         if (isRequired) {
             ensureFilesLoaded(gallery);
-            if (!isUnavailable(gallery)) {
+            if (isUnavailable(gallery)) {
+                isRequired = false;
+            } else {
                 Optional<Path> pageFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
                 if (pageFile.isPresent()) {
                     if (getSettings().getOperationMode() == OperationMode.UPDATE) {

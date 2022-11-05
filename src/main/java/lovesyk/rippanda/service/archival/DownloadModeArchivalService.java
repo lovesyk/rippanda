@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
@@ -25,6 +26,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The service responsible for the archival of a web search result.
  */
+@ApplicationScoped
 public class DownloadModeArchivalService extends AbstractArchivalService implements IArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(DownloadModeArchivalService.class);
 

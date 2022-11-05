@@ -17,7 +17,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
-import jakarta.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
 import lovesyk.rippanda.exception.RipPandaException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -28,7 +28,7 @@ import picocli.CommandLine.Parameters;
 /**
  * The application settings that represent the command line arguments.
  */
-@Singleton
+@ApplicationScoped
 @Command(name = "rippanda", sortOptions = false)
 public class Settings implements Callable<Integer> {
     private static final String SKIP_ELEMENTS_METADATA = "metadata";

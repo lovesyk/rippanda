@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
@@ -22,6 +23,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The archival service for gallery page elements.
  */
+@ApplicationScoped
 public class PageArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(PageArchivalService.class);
     private static final String FILENAME = "page.html";

@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
@@ -33,6 +34,7 @@ import lovesyk.rippanda.settings.UpdateInterval;
 /**
  * The service responsible for the updating of already archived galleries.
  */
+@ApplicationScoped
 public class UpdateModeArchivalService extends AbstractArchivalService implements IArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(UpdateModeArchivalService.class);
 

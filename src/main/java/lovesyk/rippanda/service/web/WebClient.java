@@ -36,8 +36,8 @@ import org.jsoup.nodes.Document;
 import com.google.gson.JsonObject;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.service.web.api.ArchivableElementWriter;
 import lovesyk.rippanda.service.web.api.IWebClient;
@@ -46,7 +46,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * Implements a web client for remote resources.
  */
-@Singleton
+@ApplicationScoped
 public class WebClient implements IWebClient {
     private static final Logger LOGGER = LogManager.getLogger(WebClient.class);
     private static final int HTTP_RESPONSE_CODE_SUCCESS = 200;

@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonSyntaxException;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
@@ -22,6 +23,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The archival service for gallery image list elements.
  */
+@ApplicationScoped
 public class ImageListArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(ImageListArchivalService.class);
     private static final String FILENAME = "imagelist.json";

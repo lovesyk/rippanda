@@ -17,6 +17,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
@@ -29,6 +30,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The service responsible for the cleanup of outdated galleries.
  */
+@ApplicationScoped
 public class CleanupModeService extends AbstractArchivalService implements IArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(CleanupModeService.class);
 

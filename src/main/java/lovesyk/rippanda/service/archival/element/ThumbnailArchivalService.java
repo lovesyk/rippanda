@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonElement;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
@@ -15,6 +16,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The archival service for gallery thumbnail elements.
  */
+@ApplicationScoped
 public class ThumbnailArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(ThumbnailArchivalService.class);
     private static final String FILENAME = "thumbnail.jpg";

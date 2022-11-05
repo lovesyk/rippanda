@@ -24,6 +24,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.settings.Settings;
@@ -31,6 +32,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The request factory for the web client.
  */
+@ApplicationScoped
 public class WebClientRequestFactory {
     private static final Gson GSON = new GsonBuilder().create();
 

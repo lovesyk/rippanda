@@ -15,6 +15,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
@@ -28,6 +29,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The archival service for gallery metadata elements.
  */
+@ApplicationScoped
 public class MetadataArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(MetadataArchivalService.class);
     private static final String FILENAME = "api-metadata.json";

@@ -21,6 +21,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.model.Gallery;
@@ -32,6 +33,7 @@ import lovesyk.rippanda.settings.Settings;
 /**
  * The archival service for gallery torrent elements.
  */
+@ApplicationScoped
 public class TorrentArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(TorrentArchivalService.class);
 

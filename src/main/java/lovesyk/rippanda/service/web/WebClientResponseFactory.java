@@ -35,6 +35,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import lovesyk.rippanda.exception.RipPandaException;
 import lovesyk.rippanda.service.web.api.ArchivableElementWriter;
 import lovesyk.rippanda.service.web.api.DownloadableFile;
@@ -42,6 +43,7 @@ import lovesyk.rippanda.service.web.api.DownloadableFile;
 /**
  * The response factory for the web client.
  */
+@ApplicationScoped
 public class WebClientResponseFactory {
     private static final Logger LOGGER = LogManager.getLogger(WebClientResponseFactory.class);
 

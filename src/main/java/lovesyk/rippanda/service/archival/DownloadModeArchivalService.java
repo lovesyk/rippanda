@@ -75,6 +75,19 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
     }
 
     /**
+     * Verifies if the document is a valid search result page.
+     * 
+     * @param document the document to check
+     * @throws RipPandaException on failure
+     */
+    private void verifySearchResultPage(Document document) throws RipPandaException {
+        Element verificationElement = document.getElementById("searchbox");
+        if (verificationElement == null) {
+            throw new RipPandaException("Could not verify the search result page got loaded correctly.");
+        }
+    }
+
+    /**
      * Runs the download archival service, retrying if necessary.
      * 
      * @throws RipPandaException    on failure
@@ -91,6 +104,7 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
                 LOGGER.debug("Loading search result: {}", pageUrl);
                 try {
                     searchResultPage = getWebClient().loadDocument(pageUrl);
+                    verifySearchResultPage(searchResultPage);
                     break;
                 } catch (RipPandaException e) {
                     LOGGER.warn("Loading search result page failed, {} tries remain.", remainingTries, e);
@@ -126,7 +140,8 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
      * @return the URL of the next search result page.
      */
     private String parseNextPageUrl(Document document) {
-        // TODO: remove first part of selector once new search engine is rolled out completely
+        // TODO: remove first part of selector once new search engine is rolled out
+        // completely
         Element nextPageElement = document.selectFirst(".ptds + td:not(.ptdd) > a, a#unext");
         if (nextPageElement != null) {
             return nextPageElement.attr("href");

@@ -100,13 +100,14 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
         String pageUrl = getSettings().getUri().toString();
         while (pageUrl != null) {
             Document searchResultPage = null;
-            for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+            for (int remainingTries = 3; remainingTries > 0;) {
                 LOGGER.debug("Loading search result: {}", pageUrl);
                 try {
                     searchResultPage = getWebClient().loadDocument(pageUrl);
                     verifySearchResultPage(searchResultPage);
                     break;
                 } catch (RipPandaException e) {
+                    --remainingTries;
                     LOGGER.warn("Loading search result page failed, {} tries remain.", remainingTries, e);
                     if (remainingTries > 0) {
                         LOGGER.warn("Waiting 10 seconds before retrying...");
@@ -165,11 +166,12 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
         } else {
             addTempSuccessId(gallery.getId());
             for (IElementArchivalService archivingService : getArchivingServiceList()) {
-                for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+                for (int remainingTries = 3; remainingTries > 0;) {
                     try {
                         archivingService.process(gallery);
                         break;
                     } catch (RipPandaException e) {
+                        --remainingTries;
                         LOGGER.warn("Archiving element failed, {} tries remain.", remainingTries, e);
                         if (remainingTries > 0) {
                             LOGGER.warn("Waiting 10 seconds before retrying...");

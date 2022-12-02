@@ -114,13 +114,13 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                         process(gallery);
                         failureCount = 0;
                     } catch (RipPandaException e) {
-                        LOGGER.warn("Failed processing gallery. Waiting for 10 seconds before continuing...", e);
+                        LOGGER.warn("Failed processing gallery.", e);
                         ++failureCount;
+                        if (failureCount > maxFailureCount) {
+                            throw new RipPandaException(String.format("Encountered more than %s failures successively. Aborting...", maxFailureCount));
+                        }
+                        LOGGER.warn("Waiting 10 seconds before continuing...", e);
                         Thread.sleep(1000 * 10);
-                    }
-
-                    if (failureCount > maxFailureCount) {
-                        throw new RipPandaException(String.format("Encountered more than %s failures successively. Aborting...", maxFailureCount));
                     }
                 }
             }
@@ -149,11 +149,12 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
 
         RipPandaException lastException = null;
         for (IElementArchivalService archivingService : getArchivingServiceList()) {
-            for (int remainingTries = 3; remainingTries > 0; --remainingTries) {
+            for (int remainingTries = 3; remainingTries > 0;) {
                 try {
                     archivingService.process(gallery);
                     break;
                 } catch (RipPandaException e) {
+                    --remainingTries;
                     LOGGER.warn("Archiving element failed, {} tries remain.", remainingTries, e);
                     lastException = e;
                     if (remainingTries > 0) {

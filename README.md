@@ -10,7 +10,7 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path]
   -p, --proxy=host:port            SOCKS5 proxy to use for network requests and DNS resolution.
   -u, --url=url                    Base URL to use for web requests or a more specific search URL if in download mode
   -d, --delay=time                 Minimum delay between web request in ISO-8601 time format
-                                     Default: 10S
+                                     Default: 15S
   -i, --update-interval=interval   Update interval when deciding whether to update a gallery as ISO-8601 periods in format
                                      minThreshold=minDuration-maxThreshold=maxDuration
                                      Default: 0D=7D-365D=90D
@@ -61,7 +61,7 @@ There are two purposes to those files:
 - This tremendously increases the startup speed of the tool since there is no need to read a possibly huge directory of galleries to find out which can safely be skipped.
 
 ## Delay
-Make sure to set the delay accordingly to your needs. The default delay of 10 seconds should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
+Make sure to set the delay accordingly to your needs. The default delay of 15 seconds should be fine for most use cases and prevent you from being banned by the web servers even in the case of excessive downloading / updating.
 
 ## Building with Maven
 ```

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -90,6 +91,8 @@ public class Settings implements Callable<Integer> {
             throw new RipPandaException("Invalid command line arguments.");
         }
 
+        successDirectory = successDirectory.toAbsolutePath();
+        archiveDirectories = archiveDirectories.stream().map(x -> x.toAbsolutePath()).collect(Collectors.toList());
         initLogging();
         initCookies();
         validateElementsToSkip();

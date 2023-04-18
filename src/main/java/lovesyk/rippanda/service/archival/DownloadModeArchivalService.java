@@ -124,8 +124,19 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
                 break;
             }
 
+            boolean anyGalleryProcessed = false;
             for (Gallery gallery : galleries) {
-                process(gallery);
+                if (isInSuccessIds(gallery.getId())) {
+                    LOGGER.info("Gallery with ID \"{}\" and token \"{}\" exists in a success file. Assume it's archived and skipping...", gallery.getId(), gallery.getToken());
+                } else {
+                    process(gallery);
+                    anyGalleryProcessed = true;
+                }
+            }
+
+            if (!anyGalleryProcessed && getSettings().isCatchup()) {
+                LOGGER.info("Skipping further pages as all galleries on current page had already been archived.");
+                break;
             }
 
             pageUrl = parseNextPageUrl(searchResultPage);
@@ -161,31 +172,27 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
     private void process(Gallery gallery) throws RipPandaException, InterruptedException {
         LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\"", gallery.getId(), gallery.getToken());
 
-        if (isInSuccessIds(gallery.getId())) {
-            LOGGER.info("Gallery exists in success file. Assume it's archived and skipping...");
-        } else {
-            addTempSuccessId(gallery.getId());
-            for (IElementArchivalService archivingService : getArchivingServiceList()) {
-                for (int remainingTries = 3; remainingTries > 0;) {
-                    try {
-                        archivingService.process(gallery);
-                        break;
-                    } catch (RipPandaException e) {
-                        --remainingTries;
-                        LOGGER.warn("Archiving element failed, {} tries remain.", remainingTries, e);
-                        if (remainingTries > 0) {
-                            LOGGER.warn("Waiting 10 seconds before retrying...");
-                            Thread.sleep(1000 * 10);
-                        } else {
-                            throw e;
-                        }
+        addTempSuccessId(gallery.getId());
+        for (IElementArchivalService archivingService : getArchivingServiceList()) {
+            for (int remainingTries = 3; remainingTries > 0;) {
+                try {
+                    archivingService.process(gallery);
+                    break;
+                } catch (RipPandaException e) {
+                    --remainingTries;
+                    LOGGER.warn("Archiving element failed, {} tries remain.", remainingTries, e);
+                    if (remainingTries > 0) {
+                        LOGGER.warn("Waiting 10 seconds before retrying...");
+                        Thread.sleep(1000 * 10);
+                    } else {
+                        throw e;
                     }
                 }
             }
-            addSuccessId(gallery.getId());
-
-            updateSuccessIds();
         }
+        addSuccessId(gallery.getId());
+
+        updateSuccessIds();
     }
 
     /**

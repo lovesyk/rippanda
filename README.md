@@ -3,7 +3,7 @@
 rippanda is an archiver tool for certain gallery websites using the panda-focused content system.
 
 ```
-Usage: rippanda [-v] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path] -u=url [-a=path]... [-e=element]... mode
+Usage: rippanda [-tv] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path] -u=url [-a=path]... [-e=element]... mode
       mode                         Operation mode: download, update, cleanup
                                      Default: download
   -c, --cookies=cookies            Log-in / perk cookies in key=value pairs separated by ;
@@ -19,6 +19,8 @@ Usage: rippanda [-v] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path]
   -s, --success-dir=path           Directory containing success files
                                      Default: .
   -e, --skip=element               Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)
+  -t, --catchup                    Enables catch-up download mode to stop processing once a fully archived page has been encountered.
+                                     Default: false
   -v, --verbose                    Specify up to 7 times to override logging verbosity (4 times by default)
 
 Example download: rippanda.jar --cookies "ipb_member_id=42; ipb_pass_hash=deadbeef" --success-dir "C:\Users\me\Downloads\success" --archive-dir "C:\Users\me\Downloads\archive" --url "https://somepandasite.org/?f_search=artbook" --proxy "127.0.0.1:1080" --delay 5S download

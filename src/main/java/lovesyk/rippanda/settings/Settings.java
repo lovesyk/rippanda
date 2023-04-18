@@ -68,7 +68,11 @@ public class Settings implements Callable<Integer> {
     @Option(names = { "-e",
             "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)")
     private HashSet<String> elementsToSkip = new HashSet<String>();
-    @Option(names = { "-v", "--verbose" }, description = "Specify up to 7 times to override logging verbosity (4 times by default)")
+    @Option(names = { "-t",
+            "--catchup" }, description = "Enables catch-up download mode to stop processing once a fully archived page has been encountered.", arity = "0", showDefaultValue = Visibility.ALWAYS)
+    private boolean catchup = false;
+    @Option(names = { "-v",
+            "--verbose" }, description = "Specify up to 7 times to override logging verbosity (4 times by default)")
     private boolean[] verbosity = new boolean[] { true, true, true, true };
 
     // not configurable for now
@@ -181,6 +185,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Thumbnail active: {}", isThumbnailActive());
         LOGGER.info("Torrent active: {}", isTorrentActive());
         LOGGER.info("ZIP active: {}", isZipActive());
+        LOGGER.info("Catch-up download mode: {}", isCatchup());
         LOGGER.info("Logging verbosity: {}", getLoggingVerbosity());
     }
 
@@ -338,6 +343,15 @@ public class Settings implements Callable<Integer> {
     }
 
     /**
+     * Whether catchup download mode is enabled or not.
+     * 
+     * @return <code>true</code> if enabled, <code>false</code> otherwise
+     */
+    public boolean isCatchup() {
+        return catchup;
+    }
+
+    /**
      * Creates a logging level based on user-input.
      * 
      * @return the logging level to use for the application
@@ -345,30 +359,30 @@ public class Settings implements Callable<Integer> {
     public Level getLoggingVerbosity() {
         Level level;
         switch (verbosity.length) {
-        case 0:
-            level = Level.OFF;
-            break;
-        case 1:
-            level = Level.FATAL;
-            break;
-        case 2:
-            level = Level.ERROR;
-            break;
-        case 3:
-            level = Level.WARN;
-            break;
-        case 4:
-            level = Level.INFO;
-            break;
-        case 5:
-            level = Level.DEBUG;
-            break;
-        case 6:
-            level = Level.TRACE;
-            break;
-        default:
-            level = Level.ALL;
-            break;
+            case 0:
+                level = Level.OFF;
+                break;
+            case 1:
+                level = Level.FATAL;
+                break;
+            case 2:
+                level = Level.ERROR;
+                break;
+            case 3:
+                level = Level.WARN;
+                break;
+            case 4:
+                level = Level.INFO;
+                break;
+            case 5:
+                level = Level.DEBUG;
+                break;
+            case 6:
+                level = Level.TRACE;
+                break;
+            default:
+                level = Level.ALL;
+                break;
         }
 
         return level;

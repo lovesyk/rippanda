@@ -18,7 +18,7 @@ Usage: rippanda [-tv] -c=cookies [-d=time] [-i=interval] [-p=host:port] [-s=path
                                      Default: .
   -s, --success-dir=path           Directory containing success files
                                      Default: .
-  -e, --skip=element               Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)
+  -e, --skip=element               Specify multiple times to skip elements during archival process. (metadata, page, imagelist, expungelog, thumbnail, torrent, zip)
   -t, --catchup                    Enables catch-up download mode to stop processing once a fully archived page has been encountered.
                                      Default: false
   -v, --verbose                    Specify up to 7 times to override logging verbosity (4 times by default)
@@ -36,13 +36,14 @@ Currently the following elements will be downloaded and updated:
 - API metadata in JSON format
 - initial page when opening the gallery containing some data like user comments not available through the API
 - the image list of the multi-page viewer page containing individual image hashes and file sizes in JSON format (should be disabled if user has no access to MPV)
+- the expunge log page in case the gallery is marked as being expunged
 - a high-quality thumbnail
 - all torrent files associated with the gallery or previous versions
 
 The update logic behaves as following:
 1. API metadata and the web page will be updated if they have not been changed within the interpolated (min / max) duration specified by the update interval which is calculated based on the timestamp (min / max thresholds) the gallery was posted at.
 2. Torrent files will be updated / removed if they do not match the API files by comparing their file size and timestamps.
-3. ZIP file, thumbnail and the image list will only be updated if their files are missing.
+3. ZIP file, thumbnail, image list and the expunge log (if expunged) will only be updated if their files are missing.
 
 If the gallery is deemed to no longer be available due to copyright claims, only the API metadata will be updated.
 On errors the tool will retry a few times after waiting a bit but cancel the process if it deems the servers to be down or for the user to be banned. It will make sure the non-temporary success file only contains fully downloaded / updated galleries.

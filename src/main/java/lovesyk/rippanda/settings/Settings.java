@@ -35,6 +35,7 @@ public class Settings implements Callable<Integer> {
     private static final String SKIP_ELEMENTS_METADATA = "metadata";
     private static final String SKIP_ELEMENTS_PAGE = "page";
     private static final String SKIP_ELEMENTS_IMAGELIST = "imagelist";
+    private static final String SKIP_ELEMENTS_EXPUNGELOG = "expungelog";
     private static final String SKIP_ELEMENTS_THUMBNAIL = "thumbnail";
     private static final String SKIP_ELEMENTS_TORRENT = "torrent";
     private static final String SKIP_ELEMENTS_ZIP = "zip";
@@ -66,7 +67,7 @@ public class Settings implements Callable<Integer> {
             "--success-dir" }, paramLabel = "path", description = "Directory containing success files", defaultValue = ".", showDefaultValue = Visibility.ALWAYS)
     private Path successDirectory;
     @Option(names = { "-e",
-            "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, imagelist, thumbnail, torrent, zip)")
+            "--skip" }, paramLabel = "element", description = "Specify multiple times to skip elements during archival process. (metadata, page, imagelist, expungelog, thumbnail, torrent, zip)")
     private HashSet<String> elementsToSkip = new HashSet<String>();
     @Option(names = { "-t",
             "--catchup" }, description = "Enables catch-up download mode to stop processing once a fully archived page has been encountered.", arity = "0", showDefaultValue = Visibility.ALWAYS)
@@ -182,6 +183,7 @@ public class Settings implements Callable<Integer> {
         LOGGER.info("Metadata active: {}", isMetadataActive());
         LOGGER.info("Page active: {}", isPageActive());
         LOGGER.info("Image list active: {}", isImageListActive());
+        LOGGER.info("Expunge log active: {}", isExpungeLogActive());
         LOGGER.info("Thumbnail active: {}", isThumbnailActive());
         LOGGER.info("Torrent active: {}", isTorrentActive());
         LOGGER.info("ZIP active: {}", isZipActive());
@@ -313,6 +315,15 @@ public class Settings implements Callable<Integer> {
      */
     public boolean isImageListActive() {
         return !elementsToSkip.contains(SKIP_ELEMENTS_IMAGELIST);
+    }
+
+    /**
+     * Whether expunge log archival should be done.
+     * 
+     * @return true if it should be done, false otherwise
+     */
+    public boolean isExpungeLogActive() {
+        return !elementsToSkip.contains(SKIP_ELEMENTS_EXPUNGELOG);
     }
 
     /**

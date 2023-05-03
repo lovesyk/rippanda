@@ -102,6 +102,19 @@ public interface IWebClient {
     Document loadArchivePreparationPage(int id, String token, String archiverKey) throws RipPandaException, InterruptedException;
 
     /**
+     * Loads the HTML for a gallery expunge log page.
+     * <p>
+     * Delays specified by application settings will be honored.
+     * 
+     * @param id    the gallery ID
+     * @param token the gallery token
+     * @return the parsed HTML response, never <code>null</code>
+     * @throws RipPandaException    on failure
+     * @throws InterruptedException on interruption
+     */
+    Document loadExpungeLogPage(int id, String token) throws RipPandaException, InterruptedException;
+
+    /**
      * Loads a local HTML file parsing it into a document.
      * 
      * @param path the path to the file to load

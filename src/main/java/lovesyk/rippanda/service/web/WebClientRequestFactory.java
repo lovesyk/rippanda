@@ -266,6 +266,28 @@ public class WebClientRequestFactory {
     }
 
     /**
+     * Creates a request to load a gallery expunge log page.
+     * 
+     * @param id    the gallery ID
+     * @param token the gallery token
+     * @return the HTTP request, never <code>null</code>
+     * @throws RipPandaException on failure
+     */
+    public HttpGet createLoadExpungeLogPageRequest(int id, String token) throws RipPandaException {
+        URIBuilder builder = new URIBuilder(getBaseUri()).setPathSegments("g", String.valueOf(id), token).setParameter("act", "expunge");
+        URI uri;
+        try {
+            uri = builder.build();
+        } catch (URISyntaxException e) {
+            throw new RipPandaException("Invalid page URL.", e);
+        }
+
+        HttpGet request = new HttpGet(uri);
+
+        return request;
+    }
+
+    /**
      * Creates a request to load a HTML document based on its URL.
      * 
      * @param url the URL

@@ -4,7 +4,10 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import lovesyk.rippanda.exception.RipPandaException;
 
 /**
  * Model of an unique gallery.
@@ -18,6 +21,7 @@ public class Gallery {
     private MetadataState metadataState;
     private List<Path> files;
     private Instant updateThreshold;
+    private boolean expunged;
 
     /**
      * Constructs a new gallery.
@@ -85,10 +89,13 @@ public class Gallery {
      * 
      * @param metadata      the gallery metadata
      * @param metadataState the current state of the given metadata
+     * @throws RipPandaException on failure
      */
-    public void setMetadata(JsonObject metadata, MetadataState metadataState) {
+    public void setMetadata(JsonObject metadata, MetadataState metadataState) throws RipPandaException {
         this.metadata = metadata;
         this.metadataState = metadataState;
+
+        setExpunged();
     }
 
     /**
@@ -144,5 +151,28 @@ public class Gallery {
      */
     public void setUpdateThreshold(Instant updateThreshold) {
         this.updateThreshold = updateThreshold;
+    }
+
+    /**
+     * Checks if the gallery has been expunged or not.
+     * 
+     * @return <code>true</code> if the gallery has been expunged, <code>false</code>
+     *         otherwise
+     */
+    public boolean isExpunged() {
+        return expunged;
+    }
+
+    /**
+     * Sets the gallery's expunged state from the API metadata.
+     *
+     * @throws RipPandaException on failure
+     */
+    private void setExpunged() throws RipPandaException {
+        JsonElement expungedElement = getMetadata().get("expunged");
+        if (expungedElement == null || !expungedElement.isJsonPrimitive()) {
+            throw new RipPandaException("Unexpected JSON.");
+        }
+        expunged = expungedElement.getAsBoolean();
     }
 }

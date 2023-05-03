@@ -385,6 +385,28 @@ public class WebClient implements IWebClient {
      * {@inheritDoc}
      */
     @Override
+    public Document loadExpungeLogPage(int id, String token) throws RipPandaException, InterruptedException {
+        ClassicHttpRequest request = getRequestFactory().createLoadExpungeLogPageRequest(id, token);
+        waitToHonorRequestDelay();
+        try (ProxyableHttpClient httpClient = createHttpClient()) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                try {
+                    checkResponseCodeAllowNotFound(response);
+                    return getResponseFactory().parseToDocument(request, response);
+                } finally {
+                    EntityUtils.consumeQuietly(response.getEntity());
+                    updatePreviousRequestTime();
+                }
+            }
+        } catch (IOException e) {
+            throw new RipPandaException("Failed executing network request.", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Document loadDocument(Path path) throws RipPandaException {
         URI baseUri = getRequestFactory().getBaseUri();
         return getResponseFactory().parseToDocument(path, baseUri);

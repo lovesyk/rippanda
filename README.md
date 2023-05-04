@@ -49,7 +49,7 @@ If the gallery is deemed to no longer be available due to copyright claims, only
 On errors the tool will retry a few times after waiting a bit but cancel the process if it deems the servers to be down or for the user to be banned. It will make sure the non-temporary success file only contains fully downloaded / updated galleries.
 
 ## Cleanup
-Cleanup mode will check all specified archive directories for galleries which have been superseeded by having a newer child gallery and remove them. The space savings will be shown after the process finishes.
+Cleanup mode will check all specified archive directories for galleries which have been superseeded by having a newer (or non-conflicting if expunged) child gallery and remove them. The space savings will be shown after the process finishes.
 
 ## GP / Credits Usage
 The tool will not harvest images one-by-one, it will use the official way of purchasing the galleries requested by GP / credits. It's in the responsibility of the user to make sure there is enough currency available to purchase all requested galleries and stop the tool if those are close to run out.

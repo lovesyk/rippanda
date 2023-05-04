@@ -69,7 +69,9 @@ public class ExpungeLogArchivalService extends AbstractElementArchivalService im
                 isRequired = false;
             } else {
                 Optional<Path> expungeLogFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
-                if (!expungeLogFile.isPresent()) {
+                if (expungeLogFile.isPresent()) {
+                    isRequired = false;
+                } else {
                     getApiArchivingService().ensureLoadedUpToDate(gallery);
                     isRequired = gallery.isExpunged();
                 }

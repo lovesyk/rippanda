@@ -309,6 +309,11 @@ public abstract class AbstractArchivalService {
         return false;
     }
 
+    protected int getSuccessIdCount() {
+        Set<Integer> successIds = successFileIdsMap.get(successFile);
+        return successIds.size();
+    }
+
     /**
      * Gets the time of the last time success files were updated.
      * 

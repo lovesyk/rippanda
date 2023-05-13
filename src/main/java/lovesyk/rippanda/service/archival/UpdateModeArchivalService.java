@@ -22,6 +22,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
+import lovesyk.rippanda.helper.ProgressRecorder;
 import lovesyk.rippanda.model.Gallery;
 import lovesyk.rippanda.model.MetadataState;
 import lovesyk.rippanda.service.archival.api.IArchivalService;
@@ -97,6 +98,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
     public void run() throws RipPandaException, InterruptedException {
         initDirs();
         initSuccessIds();
+        ProgressRecorder progress = new ProgressRecorder();
 
         int failureCount = 0;
         int maxFailureCount = 3;
@@ -108,8 +110,9 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                 if (gallery == null) {
                     LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
                 } else {
-                    LOGGER.info("Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\"", gallery.getId(), gallery.getToken(),
-                            gallery.getDir());
+                    LOGGER.info(
+                            "Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\".{}", gallery.getId(), gallery.getToken(),
+                            gallery.getDir(), progress.toProgressString(getSuccessIdCount()));
                     try {
                         process(gallery);
                         failureCount = 0;
@@ -122,6 +125,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                         LOGGER.warn("Waiting 10 seconds before continuing...", e);
                         Thread.sleep(1000 * 10);
                     }
+                    progress.saveMilestone();
                 }
             }
         } catch (IOException e) {

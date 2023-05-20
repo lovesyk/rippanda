@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -102,6 +103,7 @@ public class WebClient implements IWebClient {
         for (Entry<String, String> cookie : getSettings().getCookies().entrySet()) {
             BasicClientCookie clientCookie = new BasicClientCookie(cookie.getKey(), cookie.getValue());
             clientCookie.setDomain(cookieDomain);
+            clientCookie.setAttribute(Cookie.DOMAIN_ATTR, cookieDomain);
             cookieStore.addCookie(clientCookie);
         }
         httpClientBuilder.setDefaultCookieStore(cookieStore);

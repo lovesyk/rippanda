@@ -65,7 +65,8 @@ public class ImageListArchivalService extends AbstractElementArchivalService imp
 
         if (isRequired) {
             ensureFilesLoaded(gallery);
-            isRequired = !isUnavailable(gallery) && gallery.getFiles().stream().noneMatch(x -> FILENAME.equals(String.valueOf(x.getFileName())));
+            isRequired = !isUnavailable(gallery)
+                    && gallery.getFiles().stream().noneMatch(x -> FILENAME.equals(String.valueOf(x.getFileName())));
         }
 
         return isRequired;

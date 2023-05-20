@@ -51,7 +51,8 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      *                                for archiving elements
      */
     @Inject
-    public CleanupModeService(Settings settings, IWebClient webClient, Instance<IElementArchivalService> elementArchivalServices) {
+    public CleanupModeService(Settings settings, IWebClient webClient,
+            Instance<IElementArchivalService> elementArchivalServices) {
         super(settings, elementArchivalServices);
         this.webClient = webClient;
     }
@@ -103,7 +104,8 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
             LOGGER.debug("Looking through directory \"{}\"...", archiveDirectory);
             try (Stream<Path> stream = Files.walk(archiveDirectory).filter(Files::isDirectory)) {
                 for (Path directory : (Iterable<Path>) stream::iterator) {
-                    process(directory, galleryIdToRemovableDirectoryMap, parentIds, childToParentIdMap, parentToConflictIdMap);
+                    process(directory, galleryIdToRemovableDirectoryMap, parentIds, childToParentIdMap,
+                            parentToConflictIdMap);
                 }
             } catch (IOException e) {
                 throw new RipPandaException("Could not traverse the given archive directory.", e);
@@ -125,11 +127,13 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      *                                <code>null</null>
      * @param childToParentIdMap      the map storing child to parent gallery ID
      *                                relationship, not <code>null</null>
-     * @param parentToConflictIdMap   the map storing child to conflicting gallery ID
+     * @param parentToConflictIdMap   the map storing child to conflicting gallery
+     *                                ID
      *                                relationship, not <code>null</null>
-     * @throws RipPandaException      on failure
+     * @throws RipPandaException on failure
      */
-    private void process(Path directory, Map<Integer, Set<Path>> galleryIdToDirectoryMap, Set<Integer> parentIds, Map<Integer, Set<Integer>> childToParentIdMap, Map<Integer, Set<Integer>> parentToConflictIdMap)
+    private void process(Path directory, Map<Integer, Set<Path>> galleryIdToDirectoryMap, Set<Integer> parentIds,
+            Map<Integer, Set<Integer>> childToParentIdMap, Map<Integer, Set<Integer>> parentToConflictIdMap)
             throws RipPandaException {
         Path pageFile = directory.resolve(PAGE_FILENAME);
         if (Files.exists(pageFile)) {
@@ -166,7 +170,8 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      * @return the gallery ID, never <code>null</null>
      * @throws RipPandaException on failure
      */
-    private Integer memorizeGalleryId(Path directory, Map<Integer, Set<Path>> galleryIdToDirectoryMap, Document page) throws RipPandaException {
+    private Integer memorizeGalleryId(Path directory, Map<Integer, Set<Path>> galleryIdToDirectoryMap, Document page)
+            throws RipPandaException {
         Element reportElement = page.selectFirst("#gd5 > .g3 > a");
         if (reportElement == null) {
             throw new RipPandaException("Could not find report element.");
@@ -223,7 +228,8 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      * @param page               the parsed gallery HTML page, not <code>null</null>
      * @throws RipPandaException on failure
      */
-    private void memorizeChildIds(Integer id, Map<Integer, Set<Integer>> childToParentIdMap, Document page) throws RipPandaException {
+    private void memorizeChildIds(Integer id, Map<Integer, Set<Integer>> childToParentIdMap, Document page)
+            throws RipPandaException {
         for (Element childElement : page.select("#gnd > a")) {
             int childId = parseGalleryUrlIdToken(childElement).getLeft();
 
@@ -233,7 +239,8 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
     }
 
     /**
-     * Process the gallery expunge log if available by memorizing relevant data for the
+     * Process the gallery expunge log if available by memorizing relevant data for
+     * the
      * cleanup process.
      * 
      * @param directory             the directory being processed, not
@@ -241,9 +248,10 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      * @param id                    the gallery ID being processed
      * @param parentToConflictIdMap the map storing parent to conflicting gallery ID
      *                              relationship, not <code>null</null>
-     * @throws RipPandaException    on failure
+     * @throws RipPandaException on failure
      */
-    private void processExpungeLog(Path directory, int id, Map<Integer, Set<Integer>> parentToConflictIdMap) throws RipPandaException {
+    private void processExpungeLog(Path directory, int id, Map<Integer, Set<Integer>> parentToConflictIdMap)
+            throws RipPandaException {
         Path expungeLogFile = directory.resolve(EXPUNGELOG_FILENAME);
         if (Files.exists(expungeLogFile)) {
             LOGGER.debug("Processing gallery expunge log...");
@@ -267,13 +275,15 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      * @param id                    the ID of the current gallery
      * @param parentToConflictIdMap the map storing parent to conflicting gallery ID
      *                              relationship, not <code>null</null>
-     * @param page                  the parsed gallery HTML page, not <code>null</null>
-     * @throws RipPandaException    on failure
+     * @param page                  the parsed gallery HTML page, not
+     *                              <code>null</null>
+     * @throws RipPandaException on failure
      */
-    private void memorizeConflictIds(int id, Map<Integer, Set<Integer>> parentToConflictIdMap, Document page) throws RipPandaException {
+    private void memorizeConflictIds(int id, Map<Integer, Set<Integer>> parentToConflictIdMap, Document page)
+            throws RipPandaException {
         Element expungeTable = page.selectFirst(".exp_table");
         Matcher matcher = GALLERY_URL_PATTERN.matcher(expungeTable.html());
-        while(matcher.find()) {
+        while (matcher.find()) {
             Integer conflictingId;
             try {
                 conflictingId = Integer.valueOf(matcher.group(2));
@@ -298,12 +308,14 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      *                                <code>null</null>
      * @param childToParentIdMap      the map storing child to parent gallery ID
      *                                relationship, not <code>null</null>
-     * @param parentToConflictIdMap   the map storing parent to conflicting gallery ID
+     * @param parentToConflictIdMap   the map storing parent to conflicting gallery
+     *                                ID
      *                                relationship, not <code>null</null>
      * @throws RipPandaException on failure
      */
     private void cleanupGalleries(Map<Integer, Set<Path>> galleryIdToRemovableDirectoryMap, Set<Integer> parentIds,
-            Map<Integer, Set<Integer>> childToParentIdMap, Map<Integer, Set<Integer>> parentToConflictIdMap) throws RipPandaException {
+            Map<Integer, Set<Integer>> childToParentIdMap, Map<Integer, Set<Integer>> parentToConflictIdMap)
+            throws RipPandaException {
         LOGGER.info("Running cleaning process...");
 
         long totalBytesSaved = 0l;
@@ -318,15 +330,20 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
 
             Set<Integer> outdatedParentIds = childToParentIdMap.remove(id);
             if (outdatedParentIds != null) {
-                LOGGER.debug("Gallery IDs {} were marked as parents of this gallery and will be attempted to be removed.", outdatedParentIds);
+                LOGGER.debug(
+                        "Gallery IDs {} were marked as parents of this gallery and will be attempted to be removed.",
+                        outdatedParentIds);
                 outdatedIds.addAll(outdatedParentIds);
             }
 
             Set<Integer> conflictIds = parentToConflictIdMap.remove(id);
             if (conflictIds != null) {
-                Integer conflictingId = conflictIds.stream().filter(galleryIdToRemovableDirectoryMap::containsKey).findAny().orElse(null);
+                Integer conflictingId = conflictIds.stream().filter(galleryIdToRemovableDirectoryMap::containsKey)
+                        .findAny().orElse(null);
                 if (conflictingId != null) {
-                    LOGGER.debug("Gallery was marked as conflicting with at least gallery ID {} and will be attempted to be removed.", conflictingId);
+                    LOGGER.debug(
+                            "Gallery was marked as conflicting with at least gallery ID {} and will be attempted to be removed.",
+                            conflictingId);
                     outdatedIds.add(id);
                 }
             }
@@ -344,7 +361,8 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
                         throw new RipPandaException("Failed removing directory.", e);
                     }
 
-                    LOGGER.info("Saved {} by removing: {}", FileUtils.byteCountToDisplaySize(bytesSaved), outdatedDirectories);
+                    LOGGER.info("Saved {} by removing: {}", FileUtils.byteCountToDisplaySize(bytesSaved),
+                            outdatedDirectories);
                 }
                 outdatedDirectories.clear();
 

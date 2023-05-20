@@ -31,7 +31,8 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
      * @param apiArchivingService the metadata archival service
      */
     @Inject
-    public ThumbnailArchivalService(Settings settings, IWebClient webClient, MetadataArchivalService apiArchivingService) {
+    public ThumbnailArchivalService(Settings settings, IWebClient webClient,
+            MetadataArchivalService apiArchivingService) {
         super(settings, webClient);
         this.apiArchivingService = apiArchivingService;
     }

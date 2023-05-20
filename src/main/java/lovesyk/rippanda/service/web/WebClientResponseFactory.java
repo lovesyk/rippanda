@@ -117,7 +117,8 @@ public class WebClientResponseFactory {
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    public boolean downloadFile(ClassicHttpRequest request, CloseableHttpResponse response, ArchivableElementWriter writer)
+    public boolean downloadFile(ClassicHttpRequest request, CloseableHttpResponse response,
+            ArchivableElementWriter writer)
             throws RipPandaException, InterruptedException {
         HttpEntity entity = tryGetEntity(response);
         InputStream stream = tryGetContent(entity);
@@ -143,7 +144,8 @@ public class WebClientResponseFactory {
 
         Header contentDispositionHeader = response.getFirstHeader(CONTENT_DISPOSITION_HEADER_NAME);
         if (contentDispositionHeader != null) {
-            Optional<String> filenameIso = Arrays.stream(MessageSupport.parse(contentDispositionHeader)).map(element -> element.getParameterByName("filename"))
+            Optional<String> filenameIso = Arrays.stream(MessageSupport.parse(contentDispositionHeader))
+                    .map(element -> element.getParameterByName("filename"))
                     .filter(Objects::nonNull).map(NameValuePair::getValue).findFirst();
             if (filenameIso.isPresent()) {
                 filename = new String(filenameIso.get().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
@@ -168,7 +170,8 @@ public class WebClientResponseFactory {
      * @return the HTML document, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    public Document parseToDocument(ClassicHttpRequest request, CloseableHttpResponse response) throws RipPandaException {
+    public Document parseToDocument(ClassicHttpRequest request, CloseableHttpResponse response)
+            throws RipPandaException {
         HttpEntity entity = tryGetEntity(response);
         InputStream stream = tryGetContent(entity);
         ContentType contentType = ContentType.parseLenient(entity.getContentType());

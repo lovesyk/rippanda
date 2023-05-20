@@ -70,7 +70,8 @@ public class WebClient implements IWebClient {
      * @param responseFactory the web client response factory
      */
     @Inject
-    public WebClient(Settings settings, WebClientRequestFactory requestFactory, WebClientResponseFactory responseFactory) {
+    public WebClient(Settings settings, WebClientRequestFactory requestFactory,
+            WebClientResponseFactory responseFactory) {
         this.settings = settings;
         this.requestFactory = requestFactory;
         this.responseFactory = responseFactory;
@@ -210,7 +211,8 @@ public class WebClient implements IWebClient {
     private void checkResponseCode(CloseableHttpResponse response) throws RipPandaException {
         int statusCode = response.getCode();
         if (statusCode != HTTP_RESPONSE_CODE_SUCCESS) {
-            throw new RipPandaException(String.format("Expected HTTP response code %s but received %s.", HTTP_RESPONSE_CODE_SUCCESS, statusCode));
+            throw new RipPandaException(String.format("Expected HTTP response code %s but received %s.",
+                    HTTP_RESPONSE_CODE_SUCCESS, statusCode));
         }
     }
 
@@ -225,7 +227,8 @@ public class WebClient implements IWebClient {
         int statusCode = response.getCode();
         if (statusCode != HTTP_RESPONSE_CODE_SUCCESS && statusCode != HTTP_RESPONSE_CODE_NOT_FOUND) {
             throw new RipPandaException(
-                    String.format("Expected HTTP response code %s or  but received %s.", HTTP_RESPONSE_CODE_SUCCESS, HTTP_RESPONSE_CODE_NOT_FOUND, statusCode));
+                    String.format("Expected HTTP response code %s or  but received %s.", HTTP_RESPONSE_CODE_SUCCESS,
+                            HTTP_RESPONSE_CODE_NOT_FOUND, statusCode));
         }
     }
 
@@ -321,8 +324,10 @@ public class WebClient implements IWebClient {
      * {@inheritDoc}
      */
     @Override
-    public Document loadArchivePreparationPage(int id, String token, String archiverKey) throws RipPandaException, InterruptedException {
-        ClassicHttpRequest request = getRequestFactory().createLoadArchivePreparationPageRequest(id, token, archiverKey);
+    public Document loadArchivePreparationPage(int id, String token, String archiverKey)
+            throws RipPandaException, InterruptedException {
+        ClassicHttpRequest request = getRequestFactory().createLoadArchivePreparationPageRequest(id, token,
+                archiverKey);
         waitToHonorRequestDelay();
         try (ProxyableHttpClient httpClient = createHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
@@ -343,7 +348,8 @@ public class WebClient implements IWebClient {
      * {@inheritDoc}
      */
     @Override
-    public boolean downloadFile(String url, ArchivableElementWriter writer) throws RipPandaException, InterruptedException {
+    public boolean downloadFile(String url, ArchivableElementWriter writer)
+            throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadDownloadableFileRequest(url);
         waitToHonorRequestDelay();
         try (ProxyableHttpClient httpClient = createHttpClient()) {

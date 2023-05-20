@@ -49,7 +49,8 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
      * @param apiArchivingService the metadata archival service
      */
     @Inject
-    public TorrentArchivalService(Settings settings, IWebClient webClient, MetadataArchivalService apiArchivingService) {
+    public TorrentArchivalService(Settings settings, IWebClient webClient,
+            MetadataArchivalService apiArchivingService) {
         super(settings, webClient);
         this.apiArchivingService = apiArchivingService;
     }
@@ -78,7 +79,8 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
                             } catch (IOException e) {
                                 throw new RipPandaException("Could not read file attributes.", e);
                             }
-                            if (apiTorrentCandidate.getTorrentSize() == size && lastModifiedTime.toInstant().isAfter(apiTorrentCandidate.getAddedDateTime())) {
+                            if (apiTorrentCandidate.getTorrentSize() == size
+                                    && lastModifiedTime.toInstant().isAfter(apiTorrentCandidate.getAddedDateTime())) {
                                 apiTorrent = apiTorrentCandidate;
                                 break;
                             }
@@ -114,7 +116,8 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
             }
 
             Elements torrentUrlElements = torrentInfoElement.select("form a[href*=.torrent]");
-            List<String> torrentUrlList = torrentUrlElements.stream().map(x -> x.attr("href")).filter(x -> isUrlInApiTorrents(x, apiTorrents))
+            List<String> torrentUrlList = torrentUrlElements.stream().map(x -> x.attr("href"))
+                    .filter(x -> isUrlInApiTorrents(x, apiTorrents))
                     .collect(Collectors.toList());
 
             for (String torrentUrl : torrentUrlList) {
@@ -216,7 +219,8 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    private void tryDownloadTorrentFile(String torrentUrl, Elements torrentUrlElements, Gallery gallery) throws RipPandaException, InterruptedException {
+    private void tryDownloadTorrentFile(String torrentUrl, Elements torrentUrlElements, Gallery gallery)
+            throws RipPandaException, InterruptedException {
         boolean success = downloadTorrentFile(torrentUrl, gallery, true);
 
         if (!success) {
@@ -250,7 +254,8 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    private boolean downloadTorrentFile(String torrentUrl, Gallery gallery, boolean failAcceptable) throws RipPandaException, InterruptedException {
+    private boolean downloadTorrentFile(String torrentUrl, Gallery gallery, boolean failAcceptable)
+            throws RipPandaException, InterruptedException {
         LOGGER.debug("Saving torrent from URL: " + torrentUrl);
         return getWebClient().downloadFile(torrentUrl, (downloadableTorrent) -> {
             if ("application/x-bittorrent".equals(downloadableTorrent.getMimeType())) {

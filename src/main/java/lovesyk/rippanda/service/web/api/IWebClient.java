@@ -99,7 +99,8 @@ public interface IWebClient {
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    Document loadArchivePreparationPage(int id, String token, String archiverKey) throws RipPandaException, InterruptedException;
+    Document loadArchivePreparationPage(int id, String token, String archiverKey)
+            throws RipPandaException, InterruptedException;
 
     /**
      * Loads the HTML for a gallery expunge log page.

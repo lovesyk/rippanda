@@ -34,7 +34,8 @@ public class ExpungeLogArchivalService extends AbstractElementArchivalService im
      * @param apiArchivingService the metadata archival service
      */
     @Inject
-    public ExpungeLogArchivalService(Settings settings, IWebClient webClient, MetadataArchivalService apiArchivingService) {
+    public ExpungeLogArchivalService(Settings settings, IWebClient webClient,
+            MetadataArchivalService apiArchivingService) {
         super(settings, webClient);
         this.apiArchivingService = apiArchivingService;
     }
@@ -55,9 +56,11 @@ public class ExpungeLogArchivalService extends AbstractElementArchivalService im
     /**
      * Checks if the expunge log should be saved or not.
      * 
-     * @return <code>true</code> if gallery has been expunged and expunge log archival is
-     *         active but no log has been found on disk, <code>false</false> otherwise.
-     * @throws RipPandaException on failure
+     * @return <code>true</code> if gallery has been expunged and expunge log
+     *         archival is
+     *         active but no log has been found on disk, <code>false</false>
+     *         otherwise.
+     * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
     private boolean isRequired(Gallery gallery) throws RipPandaException, InterruptedException {
@@ -68,7 +71,8 @@ public class ExpungeLogArchivalService extends AbstractElementArchivalService im
             if (isUnavailable(gallery)) {
                 isRequired = false;
             } else {
-                Optional<Path> expungeLogFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
+                Optional<Path> expungeLogFile = gallery.getFiles().stream()
+                        .filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
                 if (expungeLogFile.isPresent()) {
                     isRequired = false;
                 } else {

@@ -37,10 +37,12 @@ class ProxiedSSLConnectionSocketFactory extends SSLConnectionSocketFactory {
     }
 
     @Override
-    public Socket connectSocket(final TimeValue connectTimeout, final Socket socket, final HttpHost host, final InetSocketAddress remoteAddress,
+    public Socket connectSocket(final TimeValue connectTimeout, final Socket socket, final HttpHost host,
+            final InetSocketAddress remoteAddress,
             final InetSocketAddress localAddress, final HttpContext context) throws IOException {
         // Convert address to unresolved
-        InetSocketAddress unresolvedRemote = InetSocketAddress.createUnresolved(host.getHostName(), remoteAddress.getPort());
+        InetSocketAddress unresolvedRemote = InetSocketAddress.createUnresolved(host.getHostName(),
+                remoteAddress.getPort());
         return super.connectSocket(connectTimeout, socket, host, unresolvedRemote, localAddress, context);
     }
 }

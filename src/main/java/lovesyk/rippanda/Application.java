@@ -25,7 +25,8 @@ public class Application {
         LOGGER.info("Starting application...");
         int status = 1;
 
-        SeContainerInitializer initializer = SeContainerInitializer.newInstance().disableDiscovery().addPackages(true, Application.class);
+        SeContainerInitializer initializer = SeContainerInitializer.newInstance().disableDiscovery().addPackages(true,
+                Application.class);
         try (SeContainer container = initializer.initialize()) {
             Settings settings = container.select(Settings.class).get();
             settings.init(args);

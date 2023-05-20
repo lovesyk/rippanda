@@ -91,7 +91,8 @@ public class Settings implements Callable<Integer> {
     public void init(String[] args) throws RipPandaException {
         LOGGER.debug("Initializing settings...");
 
-        int exitCode = new CommandLine(this).setUsageHelpLongOptionsMaxWidth(26).setUsageHelpWidth(160).setCaseInsensitiveEnumValuesAllowed(true).execute(args);
+        int exitCode = new CommandLine(this).setUsageHelpLongOptionsMaxWidth(26).setUsageHelpWidth(160)
+                .setCaseInsensitiveEnumValuesAllowed(true).execute(args);
         if (exitCode != 0) {
             throw new RipPandaException("Invalid command line arguments.");
         }
@@ -155,7 +156,8 @@ public class Settings implements Callable<Integer> {
      * @throws RipPandaException if any invalid element is encountered
      */
     private void validateElementsToSkip() throws RipPandaException {
-        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_IMAGELIST, SKIP_ELEMENTS_THUMBNAIL,
+        List<String> validElements = Arrays.asList(SKIP_ELEMENTS_METADATA, SKIP_ELEMENTS_PAGE, SKIP_ELEMENTS_IMAGELIST,
+                SKIP_ELEMENTS_THUMBNAIL,
                 SKIP_ELEMENTS_TORRENT, SKIP_ELEMENTS_ZIP);
         for (String element : elementsToSkip) {
             if (!validElements.contains(element)) {

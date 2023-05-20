@@ -152,7 +152,8 @@ public class MetadataArchivalService extends AbstractElementArchivalService impl
      */
     private boolean isUpdatingRequired(Gallery gallery) throws RipPandaException {
         ensureFilesLoaded(gallery);
-        Optional<Path> metadataFile = gallery.getFiles().stream().filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
+        Optional<Path> metadataFile = gallery.getFiles().stream()
+                .filter(x -> FILENAME.equals(String.valueOf(x.getFileName()))).findAny();
         boolean isRequired = !metadataFile.isPresent();
 
         if (metadataFile.isPresent() && getSettings().getOperationMode() == OperationMode.UPDATE) {

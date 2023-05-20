@@ -93,7 +93,8 @@ public class WebClientRequestFactory {
             throw new RipPandaException("Invalid URL.", e);
         }
 
-        List<List<Object>> gidlist = idTokenPairs.entrySet().stream().map(WebClientRequestFactory::toGid).collect(Collectors.toList());
+        List<List<Object>> gidlist = idTokenPairs.entrySet().stream().map(WebClientRequestFactory::toGid)
+                .collect(Collectors.toList());
         ApiRequest gdataRequest = new ApiRequest();
         gdataRequest.setMethod("gdata");
         gdataRequest.setGidlist(gidlist);
@@ -180,7 +181,8 @@ public class WebClientRequestFactory {
      * @throws RipPandaException on failure
      */
     public HttpGet createLoadTorrentPageRequest(int id, String token) throws RipPandaException {
-        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("gallerytorrents.php").addParameter("gid", String.valueOf(id)).addParameter("t", token);
+        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("gallerytorrents.php")
+                .addParameter("gid", String.valueOf(id)).addParameter("t", token);
         URI uri;
         try {
             uri = builder.build();
@@ -202,8 +204,10 @@ public class WebClientRequestFactory {
      * @return the HTTP request, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    public HttpPost createLoadArchivePreparationPageRequest(int id, String token, String archiverKey) throws RipPandaException {
-        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("archiver.php").setParameter("gid", String.valueOf(id)).setParameter("token", token)
+    public HttpPost createLoadArchivePreparationPageRequest(int id, String token, String archiverKey)
+            throws RipPandaException {
+        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("archiver.php")
+                .setParameter("gid", String.valueOf(id)).setParameter("token", token)
                 .setParameter("or", archiverKey);
         URI uri;
         try {
@@ -274,7 +278,8 @@ public class WebClientRequestFactory {
      * @throws RipPandaException on failure
      */
     public HttpGet createLoadExpungeLogPageRequest(int id, String token) throws RipPandaException {
-        URIBuilder builder = new URIBuilder(getBaseUri()).setPathSegments("g", String.valueOf(id), token).setParameter("act", "expunge");
+        URIBuilder builder = new URIBuilder(getBaseUri()).setPathSegments("g", String.valueOf(id), token)
+                .setParameter("act", "expunge");
         URI uri;
         try {
             uri = builder.build();

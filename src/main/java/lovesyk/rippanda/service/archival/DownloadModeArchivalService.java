@@ -41,7 +41,8 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
      *                                for archiving elements
      */
     @Inject
-    public DownloadModeArchivalService(Settings settings, IWebClient webClient, Instance<IElementArchivalService> elementArchivalServices) {
+    public DownloadModeArchivalService(Settings settings, IWebClient webClient,
+            Instance<IElementArchivalService> elementArchivalServices) {
         super(settings, elementArchivalServices);
         this.webClient = webClient;
     }
@@ -127,7 +128,9 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
             boolean anyGalleryProcessed = false;
             for (Gallery gallery : galleries) {
                 if (isInSuccessIds(gallery.getId())) {
-                    LOGGER.info("Gallery with ID \"{}\" and token \"{}\" exists in a success file. Assume it's archived and skipping...", gallery.getId(), gallery.getToken());
+                    LOGGER.info(
+                            "Gallery with ID \"{}\" and token \"{}\" exists in a success file. Assume it's archived and skipping...",
+                            gallery.getId(), gallery.getToken());
                 } else {
                     process(gallery);
                     anyGalleryProcessed = true;
@@ -211,7 +214,8 @@ public class DownloadModeArchivalService extends AbstractArchivalService impleme
 
             int id = parseGalleryId(galleryElement);
             String token = parseGalleryToken(galleryElement);
-            Gallery gallery = new Gallery(id, token, getSettings().getWritableArchiveDirectory().resolve(String.valueOf(id)));
+            Gallery gallery = new Gallery(id, token,
+                    getSettings().getWritableArchiveDirectory().resolve(String.valueOf(id)));
 
             galleries.add(gallery);
         }

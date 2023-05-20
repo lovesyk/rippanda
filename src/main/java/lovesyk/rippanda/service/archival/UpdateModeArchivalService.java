@@ -54,7 +54,8 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
      *                                for archiving elements
      */
     @Inject
-    public UpdateModeArchivalService(Settings settings, IWebClient webClient, Instance<IElementArchivalService> elementArchivalServices) {
+    public UpdateModeArchivalService(Settings settings, IWebClient webClient,
+            Instance<IElementArchivalService> elementArchivalServices) {
         super(settings, elementArchivalServices);
         this.webClient = webClient;
     }
@@ -111,7 +112,8 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                     LOGGER.debug("Directory does not appear to contain a gallery: \"{}\"", directory);
                 } else {
                     LOGGER.info(
-                            "Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\".{}", gallery.getId(), gallery.getToken(),
+                            "Processing gallery with ID \"{}\" and token \"{}\" in directory: \"{}\".{}",
+                            gallery.getId(), gallery.getToken(),
                             gallery.getDir(), progress.toProgressString(getSuccessIdCount()));
                     try {
                         process(gallery);
@@ -120,7 +122,8 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                         LOGGER.warn("Failed processing gallery.", e);
                         ++failureCount;
                         if (failureCount > maxFailureCount) {
-                            throw new RipPandaException(String.format("Encountered more than %s failures successively. Aborting...", maxFailureCount));
+                            throw new RipPandaException(String.format(
+                                    "Encountered more than %s failures successively. Aborting...", maxFailureCount));
                         }
                         LOGGER.warn("Waiting 10 seconds before continuing...", e);
                         Thread.sleep(1000 * 10);

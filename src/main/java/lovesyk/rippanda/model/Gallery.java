@@ -156,7 +156,8 @@ public class Gallery {
     /**
      * Checks if the gallery has been expunged or not.
      * 
-     * @return <code>true</code> if the gallery has been expunged, <code>false</code>
+     * @return <code>true</code> if the gallery has been expunged,
+     *         <code>false</code>
      *         otherwise
      */
     public boolean isExpunged() {

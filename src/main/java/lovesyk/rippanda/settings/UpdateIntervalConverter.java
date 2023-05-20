@@ -21,7 +21,9 @@ class UpdateIntervalConverter implements ITypeConverter<UpdateInterval> {
     public UpdateInterval convert(String value) throws Exception {
         Matcher matcher = PATTERN.matcher(value);
         if (!matcher.matches()) {
-            throw new TypeConversionException("Invalid format: must be 'minThreshold=minDuration-maxThreshold=maxDuration' but was '" + value + "'");
+            throw new TypeConversionException(
+                    "Invalid format: must be 'minThreshold=minDuration-maxThreshold=maxDuration' but was '" + value
+                            + "'");
         }
 
         Duration minThreshold = PERIOD_CONVERTER.convert(matcher.group(1));

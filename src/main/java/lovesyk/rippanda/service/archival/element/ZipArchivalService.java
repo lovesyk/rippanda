@@ -70,7 +70,8 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
 
         if (isRequired) {
             ensureFilesLoaded(gallery);
-            isRequired = !isUnavailable(gallery) && gallery.getFiles().stream().noneMatch(x -> x.toString().endsWith(FILENAME_EXTENSION));
+            isRequired = !isUnavailable(gallery)
+                    && gallery.getFiles().stream().noneMatch(x -> x.toString().endsWith(FILENAME_EXTENSION));
         }
 
         return isRequired;
@@ -135,7 +136,8 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      */
     private String loadArchiveUrl(Gallery gallery, String archiverKey) throws RipPandaException, InterruptedException {
         LOGGER.debug("Generating ZIP URL...");
-        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(gallery.getId(), gallery.getToken(), archiverKey);
+        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(gallery.getId(), gallery.getToken(),
+                archiverKey);
 
         for (int i = 0;; ++i) {
             Element continueUrlElement = archivePreparationPage.selectFirst("#continue a");

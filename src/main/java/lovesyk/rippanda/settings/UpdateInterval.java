@@ -22,9 +22,11 @@ public class UpdateInterval {
      * @param maxDuration  the maximum permitted duration
      * @throws RipPandaException if the state is invalid
      */
-    public UpdateInterval(Duration minThreshold, Duration minDuration, Duration maxThreshold, Duration maxDuration) throws RipPandaException {
+    public UpdateInterval(Duration minThreshold, Duration minDuration, Duration maxThreshold, Duration maxDuration)
+            throws RipPandaException {
         if (minThreshold.compareTo(maxThreshold) > 0 || minDuration.compareTo(maxDuration) > 0) {
-            throw new RipPandaException("Minimum update threshold or duration must not be smaller than the maximum one.");
+            throw new RipPandaException(
+                    "Minimum update threshold or duration must not be smaller than the maximum one.");
         }
         this.minThreshold = minThreshold;
         this.minDuration = minDuration;

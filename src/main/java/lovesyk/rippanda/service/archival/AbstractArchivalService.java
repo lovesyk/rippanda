@@ -198,7 +198,8 @@ public abstract class AbstractArchivalService {
             LOGGER.trace("Success file was updated after " + getSuccessIdsUpdated());
             loadSuccessFile(file);
         } else {
-            LOGGER.trace("Success file will not be updated since it was was not updated after " + getSuccessIdsUpdated());
+            LOGGER.trace(
+                    "Success file will not be updated since it was was not updated after " + getSuccessIdsUpdated());
         }
     }
 
@@ -272,7 +273,8 @@ public abstract class AbstractArchivalService {
     protected void addTempSuccessId(int id) throws RipPandaException {
         LOGGER.debug("Adding gallery ID \"" + id + "\" to temporary success file...");
         try {
-            Files.writeString(getSuccessTempFile(), String.valueOf(id) + LINE_ENDING, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(getSuccessTempFile(), String.valueOf(id) + LINE_ENDING, StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new RipPandaException("Could not add gallery ID to temporary success file.", e);
         }
@@ -287,7 +289,8 @@ public abstract class AbstractArchivalService {
     protected void addSuccessId(int id) throws RipPandaException {
         LOGGER.debug("Adding gallery ID \"" + id + "\" to success file...");
         try {
-            Files.writeString(getSuccessFile(), String.valueOf(id) + LINE_ENDING, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(getSuccessFile(), String.valueOf(id) + LINE_ENDING, StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new RipPandaException("Could not add gallery ID to success file.", e);
         }

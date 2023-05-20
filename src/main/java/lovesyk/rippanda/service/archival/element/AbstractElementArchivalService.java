@@ -77,7 +77,8 @@ abstract class AbstractElementArchivalService {
      * The maximum filename size in bytes for unique filenames on UTF16 file
      * systems.
      */
-    private static final int MAX_FILENAME_UNIQUE_UTF16_BYTES = MAX_FILENAME_LENGTH - MAX_FILENAME_TMP_OVERHEAD_LENGTH * 2;
+    private static final int MAX_FILENAME_UNIQUE_UTF16_BYTES = MAX_FILENAME_LENGTH
+            - MAX_FILENAME_TMP_OVERHEAD_LENGTH * 2;
     /**
      * Account for non-unique suffixes up to 99 -> " (99)"
      */
@@ -86,12 +87,14 @@ abstract class AbstractElementArchivalService {
      * The maximum filename size in bytes for non-unique filenames on UTF8 file
      * systems.
      */
-    private static final int MAX_FILENAME_NON_UNIQUE_UTF8_BYTES = MAX_FILENAME_UNIQUE_UTF8_BYTES - MAX_FILENAME_NON_UNIQUE_OVERHEAD_LENGTH;
+    private static final int MAX_FILENAME_NON_UNIQUE_UTF8_BYTES = MAX_FILENAME_UNIQUE_UTF8_BYTES
+            - MAX_FILENAME_NON_UNIQUE_OVERHEAD_LENGTH;
     /**
      * The maximum filename size in bytes for non-unique filenames on UTF16 file
      * systems.
      */
-    private static final int MAX_FILENAME_NON_UNIQUE_UTF16_BYTES = MAX_FILENAME_UNIQUE_UTF16_BYTES - MAX_FILENAME_NON_UNIQUE_OVERHEAD_LENGTH * 2;
+    private static final int MAX_FILENAME_NON_UNIQUE_UTF16_BYTES = MAX_FILENAME_UNIQUE_UTF16_BYTES
+            - MAX_FILENAME_NON_UNIQUE_OVERHEAD_LENGTH * 2;
 
     /**
      * The regular expression to apply for cleanup of filenames during sanitization.
@@ -273,7 +276,8 @@ abstract class AbstractElementArchivalService {
         String baseName = FilenameUtils.getBaseName(filename);
         String dottedExtension = filename.substring(baseName.length());
 
-        String maxSuffix = (unique ? StringUtils.EMPTY : FILENAME_SUFFIX_EXAMPLE_DUPLICATE) + dottedExtension + FILENAME_SUFFIX_EXAMPLE_TMP;
+        String maxSuffix = (unique ? StringUtils.EMPTY : FILENAME_SUFFIX_EXAMPLE_DUPLICATE) + dottedExtension
+                + FILENAME_SUFFIX_EXAMPLE_TMP;
 
         Path file = dir.resolve(baseName + maxSuffix).toAbsolutePath();
         int excessivePathLength = file.toString().length() - MAX_PATH_LENGTH;
@@ -289,9 +293,11 @@ abstract class AbstractElementArchivalService {
         String truncatedBaseNameUtf8 = truncateBaseName(baseName, maxSuffix, maxUtf8ByteCount, StandardCharsets.UTF_8);
 
         int maxUtf16ByteCount = unique ? MAX_FILENAME_UNIQUE_UTF16_BYTES : MAX_FILENAME_NON_UNIQUE_UTF16_BYTES;
-        String truncatedBaseNameUtf16 = truncateBaseName(baseName, maxSuffix, maxUtf16ByteCount, StandardCharsets.UTF_16);
+        String truncatedBaseNameUtf16 = truncateBaseName(baseName, maxSuffix, maxUtf16ByteCount,
+                StandardCharsets.UTF_16);
 
-        String minBaseName = Arrays.asList(truncatedBaseNameForPath, truncatedBaseNameUtf8, truncatedBaseNameUtf16).stream()
+        String minBaseName = Arrays.asList(truncatedBaseNameForPath, truncatedBaseNameUtf8, truncatedBaseNameUtf16)
+                .stream()
                 .min(Comparator.comparingInt(String::length)).get();
         String strippedFilename = StringUtils.strip(minBaseName + dottedExtension);
 
@@ -310,7 +316,8 @@ abstract class AbstractElementArchivalService {
      * @return the truncated base name, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    private String truncateBaseName(String baseName, String suffix, int byteCount, Charset charset) throws RipPandaException {
+    private String truncateBaseName(String baseName, String suffix, int byteCount, Charset charset)
+            throws RipPandaException {
         int baseNameByteCount = byteCount - suffix.getBytes(charset).length;
         if (baseNameByteCount <= 0) {
             throw new RipPandaException("Cannot truncate file name enough to fulfil limits.");
@@ -350,7 +357,8 @@ abstract class AbstractElementArchivalService {
 
             Map<String, Path> existingFilenames;
             try {
-                existingFilenames = Files.list(dir).collect(Collectors.toMap(x -> x.getFileName().toString().toLowerCase(), x -> x));
+                existingFilenames = Files.list(dir)
+                        .collect(Collectors.toMap(x -> x.getFileName().toString().toLowerCase(), x -> x));
             } catch (IOException e) {
                 throw new RipPandaException("Could not list directory files.", e);
             }

@@ -1,0 +1,15 @@
+{
+	"recommendations": [
+		"vscjava.vscode-java-debug",
+		"redhat.fabric8-analytics",
+		"vscjava.vscode-java-pack",
+		"visualstudioexptteam.vscodeintellicode",
+		"visualstudioexptteam.intellicode-api-usage-examples",
+		"redhat.java",
+		"vscjava.vscode-maven",
+		"vscjava.vscode-java-dependency",
+		"vscjava.vscode-java-test",
+		"redhat.vscode-xml"
+	],
+	"unwantedRecommendations": []
+}

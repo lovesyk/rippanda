@@ -1,6 +1,7 @@
 package lovesyk.rippanda.service.archival.element;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -11,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -269,6 +271,15 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
                 return false;
             }
 
+            if (LOGGER.isTraceEnabled()) {
+                try {
+                    String streamString = IOUtils.toString(downloadableTorrent.getStream(),
+                            StandardCharsets.UTF_8.name());
+                    LOGGER.trace("Received stream content: {}", streamString);
+                } catch (IOException e) {
+                    LOGGER.trace("Could not receive stream content.", e);
+                }
+            }
             throw new RipPandaException("Could not load torrent file.");
         });
     }

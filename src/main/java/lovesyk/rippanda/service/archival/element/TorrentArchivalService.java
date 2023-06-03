@@ -241,7 +241,8 @@ public class TorrentArchivalService extends AbstractElementArchivalService imple
                 return true;
             });
 
-            downloadTorrentFile(torrentUrl, gallery, false);
+            // add dummy query parameter in case CF cached the previous failure
+            downloadTorrentFile(torrentUrl + "?cache=bypass", gallery, false);
         }
     }
 

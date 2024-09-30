@@ -281,20 +281,23 @@ public class CleanupModeService extends AbstractArchivalService implements IArch
      */
     private void memorizeConflictIds(int id, Map<Integer, Set<Integer>> parentToConflictIdMap, Document page)
             throws RipPandaException {
-        Element expungeTable = page.selectFirst(".exp_table");
-        Matcher matcher = GALLERY_URL_PATTERN.matcher(expungeTable.html());
-        while (matcher.find()) {
-            Integer conflictingId;
-            try {
-                conflictingId = Integer.valueOf(matcher.group(2));
-            } catch (NumberFormatException e) {
-                throw new RipPandaException("Could not parse gallery ID.", e);
-            }
+        if (page.selectFirst(".exp_outer:contains(administratively expunged)") == null) {
+            Element expungeTable = page.selectFirst(".exp_table");
+            Matcher matcher = GALLERY_URL_PATTERN.matcher(expungeTable.html());
+            while (matcher.find()) {
+                Integer conflictingId;
+                try {
+                    conflictingId = Integer.valueOf(matcher.group(2));
+                } catch (NumberFormatException e) {
+                    throw new RipPandaException("Could not parse gallery ID.", e);
+                }
 
-            // exclude the case where the description contains its own gallery ID
-            if (conflictingId != id) {
-                LOGGER.debug("Memorizing conflicting gallery ID {}...", conflictingId);
-                parentToConflictIdMap.computeIfAbsent(id, conflictingIds -> new HashSet<Integer>()).add(conflictingId);
+                // exclude the case where the description contains its own gallery ID
+                if (conflictingId != id) {
+                    LOGGER.debug("Memorizing conflicting gallery ID {}...", conflictingId);
+                    parentToConflictIdMap.computeIfAbsent(id, conflictingIds -> new HashSet<Integer>())
+                            .add(conflictingId);
+                }
             }
         }
     }

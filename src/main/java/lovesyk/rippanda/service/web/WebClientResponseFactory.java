@@ -15,8 +15,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
@@ -57,7 +57,7 @@ public class WebClientResponseFactory {
      * @return the JSON object, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    public JsonObject parseLoadMetadataResponse(CloseableHttpResponse response) throws RipPandaException {
+    public JsonObject parseLoadMetadataResponse(ClassicHttpResponse response) throws RipPandaException {
         InputStream entityContent = tryGetContent(tryGetEntity(response));
 
         JsonElement responseElement;
@@ -82,7 +82,7 @@ public class WebClientResponseFactory {
      * @return the HTTP entity, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    private HttpEntity tryGetEntity(CloseableHttpResponse response) throws RipPandaException {
+    private HttpEntity tryGetEntity(ClassicHttpResponse response) throws RipPandaException {
         HttpEntity entity = response.getEntity();
         if (entity == null) {
             throw new RipPandaException("Expected entity not found in HTTP response.");
@@ -117,7 +117,7 @@ public class WebClientResponseFactory {
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    public boolean downloadFile(ClassicHttpRequest request, CloseableHttpResponse response,
+    public boolean downloadFile(ClassicHttpRequest request, ClassicHttpResponse response,
             ArchivableElementWriter writer)
             throws RipPandaException, InterruptedException {
         HttpEntity entity = tryGetEntity(response);
@@ -138,7 +138,7 @@ public class WebClientResponseFactory {
      * @param response    the HTTP response
      * @return the filename
      */
-    private String getFilename(URI responseUri, CloseableHttpResponse response) {
+    private String getFilename(URI responseUri, ClassicHttpResponse response) {
         LOGGER.trace("Trying to find filename in HTTP headers...");
         String filename = null;
 
@@ -170,7 +170,7 @@ public class WebClientResponseFactory {
      * @return the HTML document, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    public Document parseToDocument(ClassicHttpRequest request, CloseableHttpResponse response)
+    public Document parseToDocument(ClassicHttpRequest request, ClassicHttpResponse response)
             throws RipPandaException {
         HttpEntity entity = tryGetEntity(response);
         InputStream stream = tryGetContent(entity);
@@ -195,7 +195,7 @@ public class WebClientResponseFactory {
      * @param response the HTTP response
      * @return the response URI
      */
-    private URI findResponseUri(ClassicHttpRequest request, CloseableHttpResponse response) {
+    private URI findResponseUri(ClassicHttpRequest request, ClassicHttpResponse response) {
         Header locationHeader = response.getFirstHeader(HttpHeaders.LOCATION);
         URI responseUri = null;
         if (locationHeader != null) {

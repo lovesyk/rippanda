@@ -9,26 +9,20 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.hc.client5.http.DnsResolver;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
-import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.URIScheme;
-import org.apache.hc.core5.http.config.Registry;
-import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,44 +104,24 @@ public class WebClient implements IWebClient {
         httpClientBuilder.setDefaultCookieStore(cookieStore);
 
         RequestConfig requestConfig = RequestConfig.custom() //
-                .setConnectTimeout(DEFAULT_TIMEOUT) //
                 .setConnectionRequestTimeout(DEFAULT_TIMEOUT) //
                 .setResponseTimeout(DEFAULT_TIMEOUT).build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
-        PoolingHttpClientConnectionManager connectionManager = createConnectionManager();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+
+        ConnectionConfig connectionConfig = ConnectionConfig.custom() //
+                .setSocketTimeout(DEFAULT_TIMEOUT) //
+                .setConnectTimeout(DEFAULT_TIMEOUT).build();
+        connectionManager.setDefaultConnectionConfig(connectionConfig);
+
+        SocketConfig socketConfig = SocketConfig.custom() //
+                .setSocksProxyAddress(getSettings().getProxy()).build();
+        connectionManager.setDefaultSocketConfig(socketConfig);
+
         httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
 
         this.httpClientBuilder = httpClientBuilder;
-    }
-
-    /**
-     * Created the connection manager to use while considering proxy settings.
-     * 
-     * @return the optionally proxied connection manager
-     */
-    private PoolingHttpClientConnectionManager createConnectionManager() {
-        ConnectionSocketFactory plainConnectionSocketFactory;
-        ConnectionSocketFactory sslConnectionSocketFactory;
-        DnsResolver dnsResolver;
-        if (getSettings().getProxy() != null) {
-            // https://stackoverflow.com/a/25203021
-            plainConnectionSocketFactory = new ProxiedPlainConnectionSocketFactory();
-            sslConnectionSocketFactory = new ProxiedSSLConnectionSocketFactory(SSLContexts.createSystemDefault());
-            dnsResolver = new FakeDnsResolver();
-        } else {
-            // org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder.build()
-            plainConnectionSocketFactory = PlainConnectionSocketFactory.getSocketFactory();
-            sslConnectionSocketFactory = SSLConnectionSocketFactory.getSocketFactory();
-            // default DNS resolver will be set by Apache
-            dnsResolver = null;
-        }
-
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create() //
-                .register(URIScheme.HTTP.id, plainConnectionSocketFactory) //
-                .register(URIScheme.HTTPS.id, sslConnectionSocketFactory) //
-                .build();
-        return new PoolingHttpClientConnectionManager(registry, null, null, null, null, dnsResolver, null);
     }
 
     /**
@@ -208,7 +182,7 @@ public class WebClient implements IWebClient {
      * @param response the HTTP response
      * @throws RipPandaException on failure
      */
-    private void checkResponseCode(CloseableHttpResponse response) throws RipPandaException {
+    private void checkResponseCode(ClassicHttpResponse response) throws RipPandaException {
         int statusCode = response.getCode();
         if (statusCode != HTTP_RESPONSE_CODE_SUCCESS) {
             throw new RipPandaException(String.format("Expected HTTP response code %s but received %s.",
@@ -223,7 +197,7 @@ public class WebClient implements IWebClient {
      * @param response the HTTP response
      * @throws RipPandaException on failure
      */
-    private void checkResponseCodeAllowNotFound(CloseableHttpResponse response) throws RipPandaException {
+    private void checkResponseCodeAllowNotFound(ClassicHttpResponse response) throws RipPandaException {
         int statusCode = response.getCode();
         if (statusCode != HTTP_RESPONSE_CODE_SUCCESS && statusCode != HTTP_RESPONSE_CODE_NOT_FOUND) {
             throw new RipPandaException(
@@ -239,8 +213,8 @@ public class WebClient implements IWebClient {
     public JsonObject loadMetadata(Map<Integer, String> idTokenPairs) throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadMetadataRequest(idTokenPairs);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCode(response);
                     return getResponseFactory().parseLoadMetadataResponse(response);
@@ -261,8 +235,8 @@ public class WebClient implements IWebClient {
     public Document loadPage(int id, String token) throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadPageRequest(id, token);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
@@ -283,8 +257,8 @@ public class WebClient implements IWebClient {
     public Document loadMpvPage(int id, String token) throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadMpvPageRequest(id, token);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
@@ -305,8 +279,8 @@ public class WebClient implements IWebClient {
     public Document loadTorrentPage(int id, String token) throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadTorrentPageRequest(id, token);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
@@ -329,8 +303,8 @@ public class WebClient implements IWebClient {
         ClassicHttpRequest request = getRequestFactory().createLoadArchivePreparationPageRequest(id, token,
                 archiverKey);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
@@ -352,8 +326,8 @@ public class WebClient implements IWebClient {
             throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadDownloadableFileRequest(url);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCode(response);
                     return getResponseFactory().downloadFile(request, response, writer);
@@ -374,8 +348,8 @@ public class WebClient implements IWebClient {
     public Document loadDocument(String url) throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadDocumentRequest(url);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCode(response);
                     return getResponseFactory().parseToDocument(request, response);
@@ -396,8 +370,8 @@ public class WebClient implements IWebClient {
     public Document loadExpungeLogPage(int id, String token) throws RipPandaException, InterruptedException {
         ClassicHttpRequest request = getRequestFactory().createLoadExpungeLogPageRequest(id, token);
         waitToHonorRequestDelay();
-        try (ProxyableHttpClient httpClient = createHttpClient()) {
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try (CloseableHttpClient httpClient = createHttpClient()) {
+            try (ClassicHttpResponse response = httpClient.executeOpen(null, request, null)) {
                 try {
                     checkResponseCodeAllowNotFound(response);
                     return getResponseFactory().parseToDocument(request, response);
@@ -479,9 +453,8 @@ public class WebClient implements IWebClient {
      * 
      * @return the HTTP client
      */
-    private ProxyableHttpClient createHttpClient() {
-        CloseableHttpClient closeableHttpClient = getHttpClientBuilder().build();
-        ProxyableHttpClient httpClient = new ProxyableHttpClient(closeableHttpClient, getSettings().getProxy());
+    private CloseableHttpClient createHttpClient() {
+        CloseableHttpClient httpClient = getHttpClientBuilder().build();
 
         return httpClient;
     }

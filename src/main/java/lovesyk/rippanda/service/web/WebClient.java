@@ -1,6 +1,7 @@
 package lovesyk.rippanda.service.web;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -108,20 +109,34 @@ public class WebClient implements IWebClient {
                 .setResponseTimeout(DEFAULT_TIMEOUT).build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        PoolingHttpClientConnectionManager connectionManager = createConnectionManager();
+        httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
+
+        this.httpClientBuilder = httpClientBuilder;
+    }
+
+    /**
+     * Created the connection manager to use while considering proxy settings.
+     * 
+     * @return the optionally proxied connection manager
+     */
+    private PoolingHttpClientConnectionManager createConnectionManager() {
+        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder
+                .create().build();
 
         ConnectionConfig connectionConfig = ConnectionConfig.custom() //
                 .setSocketTimeout(DEFAULT_TIMEOUT) //
                 .setConnectTimeout(DEFAULT_TIMEOUT).build();
         connectionManager.setDefaultConnectionConfig(connectionConfig);
 
-        SocketConfig socketConfig = SocketConfig.custom() //
-                .setSocksProxyAddress(getSettings().getProxy()).build();
-        connectionManager.setDefaultSocketConfig(socketConfig);
+        InetSocketAddress proxy = getSettings().getProxy();
+        if (proxy != null) {
+            SocketConfig socketConfig = SocketConfig.custom() //
+                    .setSocksProxyAddress(getSettings().getProxy()).build();
+            connectionManager.setDefaultSocketConfig(socketConfig);
+        }
 
-        httpClientBuilder.setConnectionManager(connectionManager).setConnectionManagerShared(true);
-
-        this.httpClientBuilder = httpClientBuilder;
+        return connectionManager;
     }
 
     /**

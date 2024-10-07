@@ -71,7 +71,7 @@ Make sure to set the delay accordingly to your needs. The default delay of 15 se
 mvn clean package
 ```
 
-## Running with Java 17
+## Running with Java 11/17/21
 ```
 java -jar rippanda.jar
 ```

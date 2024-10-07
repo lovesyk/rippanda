@@ -138,6 +138,17 @@
               <multiReleaseOutput>true</multiReleaseOutput>
             </configuration>
           </execution>
+          <execution>
+            <id>compile-java-21</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <release>21</release>
+              <multiReleaseOutput>true</multiReleaseOutput>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

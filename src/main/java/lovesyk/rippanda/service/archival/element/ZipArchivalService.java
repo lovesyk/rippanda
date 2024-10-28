@@ -8,9 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lovesyk.rippanda.exception.RipPandaException;
@@ -28,21 +25,19 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
     private static final Logger LOGGER = LogManager.getLogger(ZipArchivalService.class);
     private static final String FILENAME_EXTENSION = ".zip";
     private static final int ARCHIVE_PREPARATION_RETRIES = 30;
+    private static final Pattern ARCHIVER_URL_PATTERN = Pattern.compile("'(.*?)'");
     private static final Pattern CONTINUE_SCRIPT_TIMEOUT_PATTERN = Pattern.compile("setTimeout\\(.*?, (\\d+)\\)");
-
-    private MetadataArchivalService apiArchivingService;
 
     /**
      * Constructs a new archival service instance.
      * 
      * @param settings            the application settings
      * @param webClient           the network web client
-     * @param apiArchivingService the metadata archival service
+     * @param pageArchivalService the page archival service
      */
     @Inject
-    public ZipArchivalService(Settings settings, IWebClient webClient, MetadataArchivalService apiArchivingService) {
+    public ZipArchivalService(Settings settings, IWebClient webClient) {
         super(settings, webClient);
-        this.apiArchivingService = apiArchivingService;
     }
 
     /**
@@ -85,10 +80,8 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      * @throws InterruptedException on interruption
      */
     private void save(Gallery gallery) throws RipPandaException, InterruptedException {
-        getApiArchivingService().ensureLoadedOnline(gallery);
-        String archiverKey = parseArchiverKey(gallery.getMetadata());
-
-        String archiveUrl = loadArchiveUrl(gallery, archiverKey);
+        String archiverUrl = loadArchiverUrl(gallery);
+        String archiveUrl = loadArchiveUrl(gallery, archiverUrl);
         if (archiveUrl == UNAVAILABLE) {
             return;
         }
@@ -108,20 +101,32 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
     }
 
     /**
-     * Parses the archival key from a single-gallery API metadata response.
+     * Parses the archiver URL from the gallery's page.
      * 
-     * @param metadata the single-gallery metadata
-     * @return the archival key
-     * @throws RipPandaException on failure
+     * @param gallery the gallery
+     * @return the archiver URL
+     * @throws RipPandaException    on failure
+     * @throws InterruptedException on interruption
      */
-    private String parseArchiverKey(JsonObject metadata) throws RipPandaException {
-        JsonElement archiverKeyElement = metadata.get("archiver_key");
-        if (archiverKeyElement == null || !archiverKeyElement.isJsonPrimitive()) {
-            throw new RipPandaException("Unexpected JSON.");
+    private String loadArchiverUrl(Gallery gallery) throws RipPandaException, InterruptedException {
+        Document document = getWebClient().loadPage(gallery.getId(), gallery.getToken());
+        Element archiverLinkElement = document.selectFirst("#gd5 > p:nth-child(2) > a");
+        if (archiverLinkElement == null) {
+            throw new RipPandaException("Could not find archiver link element.");
         }
-        String archiverKey = archiverKeyElement.getAsString();
 
-        return archiverKey;
+        String onClickAttribute = archiverLinkElement.attributes().get("onclick");
+        if (onClickAttribute == null) {
+            throw new RipPandaException("Could not find onClick attribute.");
+        }
+
+        Matcher archiverUrlMatcher = ARCHIVER_URL_PATTERN.matcher(onClickAttribute);
+        if (!archiverUrlMatcher.find()) {
+            throw new RipPandaException("Could not find archiver URL.");
+        }
+        String archiverUrl = archiverUrlMatcher.group(1);
+
+        return archiverUrl;
     }
 
     /**
@@ -129,15 +134,14 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
      * file to become available.
      * 
      * @param document    the gallery document
-     * @param archiverKey the gallery archiver key as returned by the API
+     * @param archiverUrl the gallery archiver URL as found on the gallery page
      * @return the gallery ZIP URL
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    private String loadArchiveUrl(Gallery gallery, String archiverKey) throws RipPandaException, InterruptedException {
+    private String loadArchiveUrl(Gallery gallery, String archiverUrl) throws RipPandaException, InterruptedException {
         LOGGER.debug("Generating ZIP URL...");
-        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(gallery.getId(), gallery.getToken(),
-                archiverKey);
+        Document archivePreparationPage = getWebClient().loadArchivePreparationPage(archiverUrl);
 
         for (int i = 0;; ++i) {
             Element continueUrlElement = archivePreparationPage.selectFirst("#continue a");
@@ -180,14 +184,5 @@ public class ZipArchivalService extends AbstractElementArchivalService implement
         }
 
         throw new RipPandaException("Could not retrieve prepared file on download server.");
-    }
-
-    /**
-     * Gets the gallery metadata archiving service.
-     * 
-     * @return the metadata archiving service
-     */
-    private MetadataArchivalService getApiArchivingService() {
-        return apiArchivingService;
     }
 }

@@ -324,10 +324,9 @@ public class WebClient implements IWebClient {
      * {@inheritDoc}
      */
     @Override
-    public Document loadArchivePreparationPage(int id, String token, String archiverKey)
+    public Document loadArchivePreparationPage(String archiverUrl)
             throws RipPandaException, InterruptedException {
-        ClassicHttpRequest request = getRequestFactory().createLoadArchivePreparationPageRequest(id, token,
-                archiverKey);
+        ClassicHttpRequest request = getRequestFactory().createLoadArchivePreparationPageRequest(archiverUrl);
         waitToHonorRequestDelay();
         try (ProxyableHttpClient httpClient = createHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {

@@ -92,14 +92,12 @@ public interface IWebClient {
      * <p>
      * Delays specified by application settings will be honored.
      * 
-     * @param id          the gallery ID
-     * @param token       the gallery token
-     * @param archiverKey the gallery archiver key as received from the API
+     * @param archiverUrl the gallery archiver key as found on the gallery page
      * @return the parsed HTML response, never <code>null</code>
      * @throws RipPandaException    on failure
      * @throws InterruptedException on interruption
      */
-    Document loadArchivePreparationPage(int id, String token, String archiverKey)
+    Document loadArchivePreparationPage(String archiverKey)
             throws RipPandaException, InterruptedException;
 
     /**

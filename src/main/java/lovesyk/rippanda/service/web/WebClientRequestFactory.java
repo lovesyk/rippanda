@@ -198,20 +198,15 @@ public class WebClientRequestFactory {
     /**
      * Creates a request to load the archive preparation page.
      * 
-     * @param id          the gallery ID
-     * @param token       the gallery token
-     * @param archiverKey the gallery archiver key as received from the API
+     * @param archiverUrl the gallery archiver URL as found on the gallery page
      * @return the HTTP request, never <code>null</code>
      * @throws RipPandaException on failure
      */
-    public HttpPost createLoadArchivePreparationPageRequest(int id, String token, String archiverKey)
+    public HttpPost createLoadArchivePreparationPageRequest(String archiverUrl)
             throws RipPandaException {
-        URIBuilder builder = new URIBuilder(getBaseUri()).setPath("archiver.php")
-                .setParameter("gid", String.valueOf(id)).setParameter("token", token)
-                .setParameter("or", archiverKey);
         URI uri;
         try {
-            uri = builder.build();
+            uri = new URI(archiverUrl);
         } catch (URISyntaxException e) {
             throw new RipPandaException("Invalid archive preparation page URL.", e);
         }

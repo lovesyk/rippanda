@@ -84,7 +84,7 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
         }
         String thumbString = thumbElement.getAsString();
 
-        String url = thumbString.toString().replaceAll("_l\\.jpg$", "_300.jpg");
+        String url = thumbString.toString().replaceAll("_250\\.jpg$", "_300.jpg");
         if (url.equals(thumbString)) {
             throw new RipPandaException("Failed creating HQ thumbnail URL. The format might have changed.");
         }

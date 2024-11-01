@@ -19,7 +19,8 @@ import lovesyk.rippanda.settings.Settings;
 @ApplicationScoped
 public class ThumbnailArchivalService extends AbstractElementArchivalService implements IElementArchivalService {
     private static final Logger LOGGER = LogManager.getLogger(ThumbnailArchivalService.class);
-    private static final String FILENAME = "thumbnail.jpg";
+    private static final String FILENAME_JPG = "thumbnail.jpg";
+    private static final String FILENAME_WEBP = "thumbnail.webp";
 
     private MetadataArchivalService apiArchivingService;
 
@@ -62,7 +63,10 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
 
         if (isRequired) {
             ensureFilesLoaded(gallery);
-            isRequired = gallery.getFiles().stream().noneMatch(x -> FILENAME.equals(String.valueOf(x.getFileName())));
+            isRequired = gallery.getFiles().stream().noneMatch(x -> {
+                String fileName = String.valueOf(x.getFileName());
+                return FILENAME_JPG.equals(fileName) || FILENAME_WEBP.equals(fileName);
+            });
         }
 
         return isRequired;
@@ -84,19 +88,27 @@ public class ThumbnailArchivalService extends AbstractElementArchivalService imp
         }
         String thumbString = thumbElement.getAsString();
 
-        String url = thumbString.toString().replaceAll("_250\\.jpg$", "_300.jpg");
-        if (url.equals(thumbString)) {
-            throw new RipPandaException("Failed creating HQ thumbnail URL. The format might have changed.");
+        String url = thumbString;
+        if (thumbString.endsWith(".jpg")) {
+            url = url.toString().replaceAll("_250\\.jpg$", "_300.jpg");
+            if (url.equals(thumbString)) {
+                throw new RipPandaException("Failed creating HQ thumbnail URL. The format might have changed.");
+            }
         }
 
         getWebClient().downloadFile(url, (downloadableThumbnail) -> {
             String mimeType = downloadableThumbnail.getMimeType();
-            if (!"image/jpeg".equals(mimeType)) {
+            String fileName;
+            if ("image/jpeg".equals(mimeType)) {
+                fileName = FILENAME_JPG;
+            } else if ("image/webp".equals(mimeType)) {
+                fileName = FILENAME_WEBP;
+            } else {
                 throw new RipPandaException("Unexpected mime type \"" + mimeType + "\".");
             }
 
             initDir(gallery.getDir());
-            save(downloadableThumbnail.getStream(), gallery.getDir(), FILENAME);
+            save(downloadableThumbnail.getStream(), gallery.getDir(), fileName);
 
             return true;
         });

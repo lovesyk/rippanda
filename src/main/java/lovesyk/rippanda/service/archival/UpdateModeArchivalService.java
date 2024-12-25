@@ -128,7 +128,7 @@ public class UpdateModeArchivalService extends AbstractArchivalService implement
                         LOGGER.warn("Waiting 10 seconds before continuing...", e);
                         Thread.sleep(1000 * 10);
                     }
-                    progress.saveMilestone();
+                    // progress.saveMilestone();
                 }
             }
         } catch (IOException e) {

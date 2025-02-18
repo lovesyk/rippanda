@@ -9,18 +9,16 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 public class ProgressRecorder {
-    private final static Duration MAX_RECORDED_DURATION = Duration.ofMinutes(10);
+    private final static int MAX_RECORDED_MILESTONES = 1000;
 
     private final List<LocalDateTime> recordedMilestones = new ArrayList<>();
     private int milestonesReached = 0;
 
     public void saveMilestone() {
         ++milestonesReached;
-        LocalDateTime now = LocalDateTime.now();
         recordedMilestones.add(LocalDateTime.now());
 
-        while (!recordedMilestones.isEmpty() &&
-                Duration.between(recordedMilestones.get(0), now).compareTo(MAX_RECORDED_DURATION) > 0) {
+        while (recordedMilestones.size() > MAX_RECORDED_MILESTONES) {
             recordedMilestones.remove(0);
         }
     }
